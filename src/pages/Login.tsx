@@ -18,7 +18,6 @@ const Login = () => {
     
     // Verificando as credenciais específicas
     setTimeout(() => {
-      // CPF: 07710027342, Senha: 0956kaue
       if (username === '07710027342' && password === '0956kaue') {
         toast({
           title: "Login bem-sucedido!",
@@ -99,11 +98,6 @@ const Login = () => {
             </button>
           </div>
         </form>
-        
-        <div className="text-center text-sm text-gray-400 mt-4">
-          <p>Credenciais de acesso:</p>
-          <p>CPF: 07710027342 / Senha: 0956kaue</p>
-        </div>
       </div>
     </div>
   );
