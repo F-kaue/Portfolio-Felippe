@@ -16,11 +16,10 @@ const Login = () => {
     e.preventDefault();
     setIsLoading(true);
     
-    // Simulando uma autenticação básica
-    // Em uma aplicação real, você usaria uma API ou serviço de autenticação
+    // Verificando as credenciais específicas
     setTimeout(() => {
-      // Credenciais de exemplo para demonstração
-      if (username === 'admin' && password === 'admin123') {
+      // CPF: 07710027342, Senha: 0956kaue
+      if (username === '07710027342' && password === '0956kaue') {
         toast({
           title: "Login bem-sucedido!",
           description: "Bem-vindo ao painel de administração.",
@@ -60,7 +59,7 @@ const Login = () => {
                 type="text"
                 required
                 className="pl-10 bg-white/5 border-white/10 focus:border-highlight-blue focus:ring focus:ring-highlight-blue/30"
-                placeholder="Nome de usuário"
+                placeholder="CPF"
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
               />
@@ -102,8 +101,8 @@ const Login = () => {
         </form>
         
         <div className="text-center text-sm text-gray-400 mt-4">
-          <p>Credenciais de demonstração:</p>
-          <p>Usuário: admin / Senha: admin123</p>
+          <p>Credenciais de acesso:</p>
+          <p>CPF: 07710027342 / Senha: 0956kaue</p>
         </div>
       </div>
     </div>
