@@ -1,7 +1,7 @@
-
 import React, { useState, useEffect, useRef } from 'react';
 import { ExternalLink, X, ArrowLeft } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 interface Project {
   id: number;
@@ -19,6 +19,7 @@ interface Project {
 const Projects: React.FC = () => {
   const sectionRef = useRef<HTMLDivElement>(null);
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
+  const isMobile = useIsMobile();
   
   const projects: Project[] = [
     {
@@ -91,7 +92,6 @@ const Projects: React.FC = () => {
     };
   }, []);
 
-  // Handle ESC key press to close modal
   useEffect(() => {
     const handleEscKey = (e: KeyboardEvent) => {
       if (e.key === 'Escape' && selectedProject) {
@@ -105,7 +105,6 @@ const Projects: React.FC = () => {
     };
   }, [selectedProject]);
 
-  // Prevent body scroll when modal is open
   useEffect(() => {
     if (selectedProject) {
       document.body.style.overflow = 'hidden';
@@ -140,7 +139,6 @@ const Projects: React.FC = () => {
               style={{ animationDelay: `${200 * index}ms` }}
               onClick={() => setSelectedProject(project)}
             >
-              {/* Card content with hover overlay */}
               <div className="relative aspect-video overflow-hidden">
                 <img 
                   src={project.image} 
@@ -194,37 +192,36 @@ const Projects: React.FC = () => {
         </div>
       </div>
       
-      {/* Project details modal - improved with multiple exit options */}
       {selectedProject && (
         <div 
           className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm"
-          onClick={() => setSelectedProject(null)} // Close when clicking the backdrop
+          onClick={() => setSelectedProject(null)}
         >
           <div 
-            className="relative bg-[#0c0c0c] border border-white/10 rounded-xl max-w-4xl w-full max-h-90vh overflow-auto animate-fade-in"
-            onClick={(e) => e.stopPropagation()} // Prevent closing when clicking on content
+            className="relative bg-[#0c0c0c] border border-white/10 rounded-xl w-full max-h-[90vh] overflow-auto animate-fade-in"
+            style={{ maxWidth: isMobile ? '100%' : '800px' }}
+            onClick={(e) => e.stopPropagation()}
           >
-            {/* Sticky header with navigation */}
-            <div className="sticky top-0 z-10 flex justify-between items-center p-4 bg-[#0c0c0c]/90 backdrop-blur-sm border-b border-white/10">
+            <div className="sticky top-0 z-10 flex justify-between items-center p-3 bg-[#0c0c0c]/90 backdrop-blur-sm border-b border-white/10">
               <button 
                 className="flex items-center gap-2 text-gray-400 hover:text-white transition-colors"
                 onClick={() => setSelectedProject(null)}
                 aria-label="Voltar aos projetos"
               >
-                <ArrowLeft className="h-5 w-5" />
-                <span>Voltar</span>
+                <ArrowLeft className="h-4 w-4" />
+                <span className="text-sm">Voltar</span>
               </button>
               
               <button 
-                className="bg-white/10 hover:bg-white/20 rounded-full p-2 transition-colors"
+                className="bg-white/10 hover:bg-white/20 rounded-full p-1.5 transition-colors"
                 onClick={() => setSelectedProject(null)}
                 aria-label="Fechar detalhes do projeto"
               >
-                <X className="h-5 w-5" />
+                <X className="h-4 w-4" />
               </button>
             </div>
             
-            <div className="aspect-video overflow-hidden">
+            <div className="aspect-video w-full max-h-[300px] overflow-hidden">
               <img 
                 src={selectedProject.image} 
                 alt={selectedProject.title} 
@@ -232,19 +229,19 @@ const Projects: React.FC = () => {
               />
             </div>
             
-            <div className="p-8 pt-4">
-              <h3 className="font-heading text-2xl md:text-3xl font-bold mb-4">{selectedProject.title}</h3>
-              <p className="text-gray-300 mb-6">{selectedProject.description}</p>
+            <div className="p-5 pt-4">
+              <h3 className="font-heading text-xl md:text-2xl font-bold mb-3">{selectedProject.title}</h3>
+              <p className="text-gray-300 text-sm mb-4">{selectedProject.description}</p>
               
-              <div className="mb-6">
-                <h4 className="font-semibold mb-3 flex items-center gap-2">
+              <div className="mb-4">
+                <h4 className="font-semibold text-sm mb-2 flex items-center gap-2">
                   <span>Tecnologias</span>
                 </h4>
                 <div className="flex flex-wrap gap-2">
                   {selectedProject.technologies.map((tech, i) => (
                     <span 
                       key={i} 
-                      className="bg-white/10 text-sm px-3 py-1 rounded-full"
+                      className="bg-white/10 text-xs px-2.5 py-0.5 rounded-full"
                     >
                       {tech}
                     </span>
@@ -252,11 +249,11 @@ const Projects: React.FC = () => {
                 </div>
               </div>
               
-              <div className="mb-6">
-                <h4 className="font-semibold mb-3 flex items-center gap-2">
+              <div className="mb-4">
+                <h4 className="font-semibold text-sm mb-2 flex items-center gap-2">
                   <span>Principais Recursos</span>
                 </h4>
-                <ul className="list-disc list-inside text-gray-300 space-y-1">
+                <ul className="list-disc list-inside text-gray-300 text-sm space-y-1 pl-1">
                   <li>Interface de usuário intuitiva e responsiva</li>
                   <li>Autenticação segura e gerenciamento de permissões</li>
                   <li>Dashboard analítico com métricas em tempo real</li>
@@ -266,24 +263,23 @@ const Projects: React.FC = () => {
               </div>
               
               {selectedProject.links.demo && (
-                <div className="mt-8">
+                <div className="mt-5">
                   <a 
                     href={selectedProject.links.demo}
-                    className="inline-flex items-center gap-2 bg-highlight-blue hover:bg-highlight-blue/80 text-white px-6 py-3 rounded-full transition-all duration-300"
+                    className="inline-flex items-center gap-2 bg-highlight-blue hover:bg-highlight-blue/80 text-white px-4 py-2 text-sm rounded-full transition-all duration-300"
                     target="_blank"
                     rel="noopener noreferrer"
                   >
-                    <ExternalLink className="w-5 h-5" />
+                    <ExternalLink className="w-4 h-4" />
                     <span>Ver Demo</span>
                   </a>
                 </div>
               )}
               
-              {/* Botão de fechar mais visível no final do modal */}
-              <div className="mt-8 flex justify-center">
+              <div className="mt-5 flex justify-center">
                 <button
                   onClick={() => setSelectedProject(null)}
-                  className="bg-white/10 hover:bg-white/20 text-white px-6 py-3 rounded-full transition-colors"
+                  className="bg-white/10 hover:bg-white/20 text-white text-sm px-4 py-2 rounded-full transition-colors"
                 >
                   Fechar projeto
                 </button>
