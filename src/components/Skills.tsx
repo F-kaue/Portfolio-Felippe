@@ -1,4 +1,3 @@
-
 import React, { useEffect, useRef } from 'react';
 
 interface Skill {
@@ -15,15 +14,11 @@ const Skills: React.FC = () => {
     { name: 'Python', level: 90, category: 'backend', color: '#3776AB' },
     { name: 'Java', level: 85, category: 'backend', color: '#f89820' },
     { name: 'JavaScript', level: 80, category: 'frontend', color: '#F7DF1E' },
-    { name: 'TypeScript', level: 75, category: 'frontend', color: '#3178C6' },
     { name: 'React', level: 75, category: 'frontend', color: '#61DAFB' },
     { name: 'HTML/CSS', level: 85, category: 'frontend', color: '#E34F26' },
     { name: 'SQL', level: 80, category: 'backend', color: '#4479A1' },
     { name: 'Git', level: 85, category: 'tools', color: '#F05032' },
-    { name: 'Docker', level: 70, category: 'tools', color: '#2496ED' },
     { name: 'Spring Boot', level: 75, category: 'backend', color: '#6DB33F' },
-    { name: 'Node.js', level: 70, category: 'backend', color: '#339933' },
-    { name: 'Django', level: 80, category: 'backend', color: '#092E20' },
   ];
 
   const categories = [
