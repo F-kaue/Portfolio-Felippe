@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect, useRef } from 'react';
-import { ExternalLink, X } from 'lucide-react';
+import { ExternalLink, X, ArrowLeft } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface Project {
@@ -194,7 +194,7 @@ const Projects: React.FC = () => {
         </div>
       </div>
       
-      {/* Project details modal - improved with clear exit options */}
+      {/* Project details modal - improved with multiple exit options */}
       {selectedProject && (
         <div 
           className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm"
@@ -204,13 +204,23 @@ const Projects: React.FC = () => {
             className="relative bg-[#0c0c0c] border border-white/10 rounded-xl max-w-4xl w-full max-h-90vh overflow-auto animate-fade-in"
             onClick={(e) => e.stopPropagation()} // Prevent closing when clicking on content
           >
-            <div className="sticky top-0 z-10 flex justify-end p-4 bg-[#0c0c0c]/90 backdrop-blur-sm">
+            {/* Sticky header with navigation */}
+            <div className="sticky top-0 z-10 flex justify-between items-center p-4 bg-[#0c0c0c]/90 backdrop-blur-sm border-b border-white/10">
+              <button 
+                className="flex items-center gap-2 text-gray-400 hover:text-white transition-colors"
+                onClick={() => setSelectedProject(null)}
+                aria-label="Voltar aos projetos"
+              >
+                <ArrowLeft className="h-5 w-5" />
+                <span>Voltar</span>
+              </button>
+              
               <button 
                 className="bg-white/10 hover:bg-white/20 rounded-full p-2 transition-colors"
                 onClick={() => setSelectedProject(null)}
                 aria-label="Fechar detalhes do projeto"
               >
-                <X className="h-6 w-6" />
+                <X className="h-5 w-5" />
               </button>
             </div>
             
@@ -269,12 +279,13 @@ const Projects: React.FC = () => {
                 </div>
               )}
               
-              <div className="mt-8 text-center">
+              {/* Botão de fechar mais visível no final do modal */}
+              <div className="mt-8 flex justify-center">
                 <button
                   onClick={() => setSelectedProject(null)}
-                  className="text-gray-400 hover:text-white transition-colors"
+                  className="bg-white/10 hover:bg-white/20 text-white px-6 py-3 rounded-full transition-colors"
                 >
-                  Voltar aos projetos
+                  Fechar projeto
                 </button>
               </div>
             </div>
