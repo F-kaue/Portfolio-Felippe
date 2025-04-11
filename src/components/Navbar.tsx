@@ -41,7 +41,7 @@ const Navbar: React.FC = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center">
           <a href="#hero" className="text-2xl font-bold gradient-text font-heading">
-            Felippe Gomes
+            Felippe Kauê
           </a>
           
           {/* Desktop Navigation */}

@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect, useRef } from 'react';
-import { ExternalLink, Github, Code, Package, Presentation } from 'lucide-react';
+import { ExternalLink, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface Project {
@@ -29,7 +29,6 @@ const Projects: React.FC = () => {
       technologies: ['Java', 'Spring Boot', 'React', 'MySQL', 'Docker', 'JWT'],
       links: {
         demo: '#',
-        github: '#',
       },
       featured: true,
     },
@@ -41,7 +40,6 @@ const Projects: React.FC = () => {
       technologies: ['Python', 'Django', 'Vue.js', 'PostgreSQL', 'RESTful API'],
       links: {
         demo: '#',
-        github: '#',
       },
       featured: true,
     },
@@ -52,7 +50,7 @@ const Projects: React.FC = () => {
       image: 'https://placehold.co/600x400/1a1a1a/cccccc?text=Dashboard+Analítico',
       technologies: ['React', 'D3.js', 'Node.js', 'MongoDB'],
       links: {
-        github: '#',
+        demo: '#',
       },
       featured: false,
     },
@@ -63,7 +61,7 @@ const Projects: React.FC = () => {
       image: 'https://placehold.co/600x400/1a1a1a/cccccc?text=API+Tarefas',
       technologies: ['Java', 'Spring Boot', 'OAuth2', 'PostgreSQL', 'Swagger'],
       links: {
-        github: '#',
+        demo: '#',
       },
       featured: false,
     },
@@ -92,6 +90,33 @@ const Projects: React.FC = () => {
       });
     };
   }, []);
+
+  // Handle ESC key press to close modal
+  useEffect(() => {
+    const handleEscKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && selectedProject) {
+        setSelectedProject(null);
+      }
+    };
+    
+    document.addEventListener('keydown', handleEscKey);
+    return () => {
+      document.removeEventListener('keydown', handleEscKey);
+    };
+  }, [selectedProject]);
+
+  // Prevent body scroll when modal is open
+  useEffect(() => {
+    if (selectedProject) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [selectedProject]);
 
   return (
     <section id="projects" className="relative py-20 bg-[#0c0c0c]" ref={sectionRef}>
@@ -146,16 +171,6 @@ const Projects: React.FC = () => {
                 </div>
                 
                 <div className="flex gap-4">
-                  {project.links.github && (
-                    <a 
-                      href={project.links.github}
-                      className="flex items-center gap-1 text-sm text-gray-300 hover:text-highlight-blue transition-colors"
-                      onClick={(e) => e.stopPropagation()}
-                    >
-                      <Github className="w-4 h-4" />
-                      <span>Código</span>
-                    </a>
-                  )}
                   {project.links.demo && (
                     <a 
                       href={project.links.demo}
@@ -179,18 +194,25 @@ const Projects: React.FC = () => {
         </div>
       </div>
       
-      {/* Project details modal */}
+      {/* Project details modal - improved with clear exit options */}
       {selectedProject && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
-          <div className="relative bg-[#0c0c0c] border border-white/10 rounded-xl max-w-4xl w-full max-h-90vh overflow-auto animate-fade-in">
-            <button 
-              className="absolute top-4 right-4 text-gray-400 hover:text-white transition-colors"
-              onClick={() => setSelectedProject(null)}
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-              </svg>
-            </button>
+        <div 
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm"
+          onClick={() => setSelectedProject(null)} // Close when clicking the backdrop
+        >
+          <div 
+            className="relative bg-[#0c0c0c] border border-white/10 rounded-xl max-w-4xl w-full max-h-90vh overflow-auto animate-fade-in"
+            onClick={(e) => e.stopPropagation()} // Prevent closing when clicking on content
+          >
+            <div className="sticky top-0 z-10 flex justify-end p-4 bg-[#0c0c0c]/90 backdrop-blur-sm">
+              <button 
+                className="bg-white/10 hover:bg-white/20 rounded-full p-2 transition-colors"
+                onClick={() => setSelectedProject(null)}
+                aria-label="Fechar detalhes do projeto"
+              >
+                <X className="h-6 w-6" />
+              </button>
+            </div>
             
             <div className="aspect-video overflow-hidden">
               <img 
@@ -200,13 +222,12 @@ const Projects: React.FC = () => {
               />
             </div>
             
-            <div className="p-8">
+            <div className="p-8 pt-4">
               <h3 className="font-heading text-2xl md:text-3xl font-bold mb-4">{selectedProject.title}</h3>
               <p className="text-gray-300 mb-6">{selectedProject.description}</p>
               
               <div className="mb-6">
                 <h4 className="font-semibold mb-3 flex items-center gap-2">
-                  <Code className="w-5 h-5 text-highlight-blue" />
                   <span>Tecnologias</span>
                 </h4>
                 <div className="flex flex-wrap gap-2">
@@ -223,7 +244,6 @@ const Projects: React.FC = () => {
               
               <div className="mb-6">
                 <h4 className="font-semibold mb-3 flex items-center gap-2">
-                  <Package className="w-5 h-5 text-highlight-green" />
                   <span>Principais Recursos</span>
                 </h4>
                 <ul className="list-disc list-inside text-gray-300 space-y-1">
@@ -235,31 +255,27 @@ const Projects: React.FC = () => {
                 </ul>
               </div>
               
-              <div>
-                <h4 className="font-semibold mb-3 flex items-center gap-2">
-                  <Presentation className="w-5 h-5 text-highlight-blue" />
-                  <span>Links</span>
-                </h4>
-                <div className="flex gap-4">
-                  {selectedProject.links.github && (
-                    <a 
-                      href={selectedProject.links.github}
-                      className="flex items-center gap-2 text-gray-300 hover:text-highlight-blue transition-colors"
-                    >
-                      <Github className="w-5 h-5" />
-                      <span>Repositório</span>
-                    </a>
-                  )}
-                  {selectedProject.links.demo && (
-                    <a 
-                      href={selectedProject.links.demo}
-                      className="flex items-center gap-2 text-gray-300 hover:text-highlight-green transition-colors"
-                    >
-                      <ExternalLink className="w-5 h-5" />
-                      <span>Demo ao Vivo</span>
-                    </a>
-                  )}
+              {selectedProject.links.demo && (
+                <div className="mt-8">
+                  <a 
+                    href={selectedProject.links.demo}
+                    className="inline-flex items-center gap-2 bg-highlight-blue hover:bg-highlight-blue/80 text-white px-6 py-3 rounded-full transition-all duration-300"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    <ExternalLink className="w-5 h-5" />
+                    <span>Ver Demo</span>
+                  </a>
                 </div>
+              )}
+              
+              <div className="mt-8 text-center">
+                <button
+                  onClick={() => setSelectedProject(null)}
+                  className="text-gray-400 hover:text-white transition-colors"
+                >
+                  Voltar aos projetos
+                </button>
               </div>
             </div>
           </div>

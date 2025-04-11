@@ -16,7 +16,7 @@ const Footer: React.FC = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex flex-col items-center">
           <a href="#hero" className="text-2xl font-bold gradient-text font-heading mb-6">
-            Felippe Gomes
+            Felippe Kauê
           </a>
           
           <div className="flex space-x-4 mb-6">
@@ -48,7 +48,7 @@ const Footer: React.FC = () => {
           </div>
           
           <p className="text-gray-400 text-sm text-center">
-            &copy; {new Date().getFullYear()} Felippe Gomes. Todos os direitos reservados.
+            &copy; {new Date().getFullYear()} Felippe Kauê. Todos os direitos reservados.
           </p>
         </div>
       </div>

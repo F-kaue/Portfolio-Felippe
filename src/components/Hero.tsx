@@ -10,7 +10,7 @@ const Hero: React.FC = () => {
   const codingTexts = [
     'def desenvolvedor_fullstack():',
     'class DesenvolvimentoWeb:',
-    '<Developer name="Felippe Gomes" />',
+    '<Developer name="Felippe Kauê" />',
     'while(true) { learn(); code(); improve(); }',
     'console.log("Vamos construir algo incrível!")',
   ];
@@ -43,7 +43,7 @@ const Hero: React.FC = () => {
     <section id="hero" className="relative min-h-screen flex items-center overflow-hidden animated-bg" ref={sectionRef}>
       <div className="section-container flex flex-col items-center justify-center text-center z-10">
         <h1 className="animate-on-scroll text-4xl md:text-6xl lg:text-7xl font-bold mb-4">
-          Olá, eu sou <span className="gradient-text">Felippe Gomes</span>
+          Olá, eu sou <span className="gradient-text">Felippe Kauê</span>
         </h1>
         
         <div className="animate-on-scroll delay-200 text-xl md:text-2xl lg:text-3xl mb-8 text-gray-300">
