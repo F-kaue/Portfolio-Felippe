@@ -1,68 +1,64 @@
 
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useRef } from 'react';
 import { Mail, Phone, MapPin, Github, Linkedin, Send } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
+import * as z from "zod";
+import { Button } from "@/components/ui/button";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+
+// Form validation schema
+const formSchema = z.object({
+  name: z.string().min(2, { message: "Nome deve ter pelo menos 2 caracteres" }),
+  subject: z.string().min(3, { message: "Assunto deve ter pelo menos 3 caracteres" }),
+  message: z.string().min(10, { message: "Mensagem deve ter pelo menos 10 caracteres" }),
+});
 
 const Contact: React.FC = () => {
   const sectionRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
-  const [formState, setFormState] = useState({
-    name: '',
-    email: '',
-    subject: '',
-    message: '',
+  
+  // Initialize form with react-hook-form and zod validation
+  const form = useForm<z.infer<typeof formSchema>>({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      name: "",
+      subject: "",
+      message: "",
+    },
   });
-  const [isSubmitting, setIsSubmitting] = useState(false);
   
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    const { name, value } = e.target;
-    setFormState(prev => ({ ...prev, [name]: value }));
-  };
-  
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsSubmitting(true);
+  // Handle form submission
+  const onSubmit = (values: z.infer<typeof formSchema>) => {
+    // Format the message for WhatsApp
+    const whatsappMessage = `*Nome:* ${values.name}%0A*Assunto:* ${values.subject}%0A*Mensagem:* ${values.message}`;
     
-    // Simulate form submission
-    setTimeout(() => {
-      toast({
-        title: "Mensagem enviada!",
-        description: "Obrigado por entrar em contato. Responderei em breve.",
-      });
-      setFormState({
-        name: '',
-        email: '',
-        subject: '',
-        message: '',
-      });
-      setIsSubmitting(false);
-    }, 1000);
-  };
-  
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            entry.target.classList.add('visible');
-          }
-        });
-      },
-      { threshold: 0.1 }
-    );
+    // Create WhatsApp URL with the formatted message
+    const whatsappUrl = `https://wa.me/5585992884178?text=${whatsappMessage}`;
     
-    const animateElements = sectionRef.current?.querySelectorAll('.animate-on-scroll');
-    animateElements?.forEach((el) => {
-      observer.observe(el);
+    // Open WhatsApp in a new tab
+    window.open(whatsappUrl, '_blank');
+    
+    // Show success toast
+    toast({
+      title: "Redirecionando para WhatsApp",
+      description: "Você será redirecionado para continuar a conversa no WhatsApp.",
     });
     
-    return () => {
-      animateElements?.forEach((el) => {
-        observer.unobserve(el);
-      });
-    };
-  }, []);
+    // Reset form
+    form.reset();
+  };
 
   return (
     <section id="contact" className="relative py-20 bg-[#0c0c0c]" ref={sectionRef}>
@@ -74,7 +70,7 @@ const Contact: React.FC = () => {
           <div className="animate-on-scroll w-20 h-1 bg-highlight-blue mx-auto rounded-full"></div>
           <p className="animate-on-scroll text-gray-400 mt-6 max-w-lg mx-auto">
             Tem um projeto interessante ou uma oportunidade? Eu adoraria conversar!
-            Preencha o formulário abaixo ou me encontre nas redes sociais.
+            Preencha o formulário abaixo para me enviar uma mensagem pelo WhatsApp.
           </p>
         </div>
         
@@ -88,8 +84,8 @@ const Contact: React.FC = () => {
                 </div>
                 <div>
                   <h3 className="font-medium text-lg mb-1">E-mail</h3>
-                  <a href="mailto:contato@felippegomes.dev" className="text-gray-400 hover:text-highlight-blue transition-colors">
-                    contato@felippegomes.dev
+                  <a href="mailto:f_kaue@hotmail.com" className="text-gray-400 hover:text-highlight-blue transition-colors">
+                    f_kaue@hotmail.com
                   </a>
                 </div>
               </div>
@@ -99,9 +95,9 @@ const Contact: React.FC = () => {
                   <Phone className="w-6 h-6 text-highlight-green" />
                 </div>
                 <div>
-                  <h3 className="font-medium text-lg mb-1">Telefone</h3>
-                  <a href="tel:+5585999999999" className="text-gray-400 hover:text-highlight-green transition-colors">
-                    +55 (85) 99999-9999
+                  <h3 className="font-medium text-lg mb-1">WhatsApp</h3>
+                  <a href="https://wa.me/5585992884178" className="text-gray-400 hover:text-highlight-green transition-colors">
+                    +55 (85) 99288-4178
                   </a>
                 </div>
               </div>
@@ -144,122 +140,94 @@ const Contact: React.FC = () => {
           
           {/* Contact Form */}
           <div className="lg:col-span-3 animate-on-scroll">
-            <form 
-              className="bg-white/5 rounded-lg p-6 border border-white/10"
-              onSubmit={handleSubmit}
-            >
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-6">
-                <div>
-                  <label htmlFor="name" className="block text-sm font-medium mb-2">
-                    Nome
-                  </label>
-                  <input 
-                    type="text" 
-                    id="name" 
-                    name="name"
-                    value={formState.name}
-                    onChange={handleChange}
-                    className={cn(
-                      "w-full px-4 py-3 rounded-lg",
-                      "bg-white/5 border border-white/10",
-                      "text-white placeholder:text-gray-500",
-                      "focus:outline-none focus:ring-2 focus:ring-highlight-blue/50"
-                    )}
-                    placeholder="Seu nome"
-                    required
-                  />
-                </div>
-                
-                <div>
-                  <label htmlFor="email" className="block text-sm font-medium mb-2">
-                    E-mail
-                  </label>
-                  <input 
-                    type="email" 
-                    id="email" 
-                    name="email"
-                    value={formState.email}
-                    onChange={handleChange}
-                    className={cn(
-                      "w-full px-4 py-3 rounded-lg",
-                      "bg-white/5 border border-white/10",
-                      "text-white placeholder:text-gray-500",
-                      "focus:outline-none focus:ring-2 focus:ring-highlight-blue/50"
-                    )}
-                    placeholder="seu@email.com"
-                    required
-                  />
-                </div>
-              </div>
-              
-              <div className="mb-6">
-                <label htmlFor="subject" className="block text-sm font-medium mb-2">
-                  Assunto
-                </label>
-                <input 
-                  type="text" 
-                  id="subject" 
-                  name="subject"
-                  value={formState.subject}
-                  onChange={handleChange}
-                  className={cn(
-                    "w-full px-4 py-3 rounded-lg",
-                    "bg-white/5 border border-white/10",
-                    "text-white placeholder:text-gray-500",
-                    "focus:outline-none focus:ring-2 focus:ring-highlight-blue/50"
-                  )}
-                  placeholder="Assunto da mensagem"
-                  required
-                />
-              </div>
-              
-              <div className="mb-6">
-                <label htmlFor="message" className="block text-sm font-medium mb-2">
-                  Mensagem
-                </label>
-                <textarea 
-                  id="message" 
-                  name="message"
-                  value={formState.message}
-                  onChange={handleChange}
-                  className={cn(
-                    "w-full px-4 py-3 rounded-lg",
-                    "bg-white/5 border border-white/10",
-                    "text-white placeholder:text-gray-500",
-                    "focus:outline-none focus:ring-2 focus:ring-highlight-blue/50",
-                    "min-h-[150px] resize-y"
-                  )}
-                  placeholder="Sua mensagem aqui..."
-                  required
-                />
-              </div>
-              
-              <button 
-                type="submit" 
-                className={cn(
-                  "w-full md:w-auto px-6 py-3 rounded-lg",
-                  "bg-gradient-to-r from-highlight-blue to-highlight-green",
-                  "text-white font-medium",
-                  "flex items-center justify-center gap-2",
-                  "transition-all duration-300",
-                  "hover:shadow-lg hover:shadow-highlight-blue/20",
-                  "disabled:opacity-70 disabled:cursor-not-allowed"
-                )}
-                disabled={isSubmitting}
+            <Form {...form}>
+              <form 
+                onSubmit={form.handleSubmit(onSubmit)}
+                className="bg-white/5 rounded-lg p-6 border border-white/10 space-y-6"
               >
-                {isSubmitting ? (
-                  <>
-                    <div className="w-5 h-5 border-2 border-white/20 border-t-white rounded-full animate-spin"></div>
-                    <span>Enviando...</span>
-                  </>
-                ) : (
-                  <>
-                    <Send className="w-4 h-4" />
-                    <span>Enviar Mensagem</span>
-                  </>
-                )}
-              </button>
-            </form>
+                <FormField
+                  control={form.control}
+                  name="name"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-sm font-medium">Nome</FormLabel>
+                      <FormControl>
+                        <Input 
+                          placeholder="Seu nome" 
+                          className={cn(
+                            "bg-white/5 border border-white/10",
+                            "text-white placeholder:text-gray-500",
+                            "focus:outline-none focus:ring-2 focus:ring-highlight-blue/50"
+                          )}
+                          {...field} 
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                
+                <FormField
+                  control={form.control}
+                  name="subject"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-sm font-medium">Assunto</FormLabel>
+                      <FormControl>
+                        <Input 
+                          placeholder="Assunto da mensagem" 
+                          className={cn(
+                            "bg-white/5 border border-white/10",
+                            "text-white placeholder:text-gray-500",
+                            "focus:outline-none focus:ring-2 focus:ring-highlight-blue/50"
+                          )}
+                          {...field} 
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                
+                <FormField
+                  control={form.control}
+                  name="message"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-sm font-medium">Mensagem</FormLabel>
+                      <FormControl>
+                        <Textarea 
+                          placeholder="Sua mensagem aqui..." 
+                          className={cn(
+                            "bg-white/5 border border-white/10",
+                            "text-white placeholder:text-gray-500",
+                            "focus:outline-none focus:ring-2 focus:ring-highlight-blue/50",
+                            "min-h-[150px] resize-y"
+                          )}
+                          {...field} 
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                
+                <Button 
+                  type="submit" 
+                  className={cn(
+                    "w-full md:w-auto px-6 py-3",
+                    "bg-gradient-to-r from-highlight-blue to-highlight-green",
+                    "text-white font-medium",
+                    "flex items-center justify-center gap-2",
+                    "transition-all duration-300",
+                    "hover:shadow-lg hover:shadow-highlight-blue/20"
+                  )}
+                >
+                  <Send className="w-4 h-4" />
+                  <span>Enviar Mensagem</span>
+                </Button>
+              </form>
+            </Form>
           </div>
         </div>
       </div>
