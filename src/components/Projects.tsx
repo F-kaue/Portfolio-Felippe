@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useRef } from 'react';
 import { ExternalLink, X, ArrowLeft } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -7,8 +8,8 @@ interface Project {
   id: number;
   title: string;
   description: string;
-  image: string;
   technologies: string[];
+  images: string[];
   links: {
     demo?: string;
     github?: string;
@@ -20,53 +21,47 @@ const Projects: React.FC = () => {
   const sectionRef = useRef<HTMLDivElement>(null);
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
   const isMobile = useIsMobile();
+  const [projects, setProjects] = useState<Project[]>([]);
   
-  const projects: Project[] = [
-    {
-      id: 1,
-      title: 'Sistema de Controle de Estoque',
-      description: 'Aplicação web para gerenciamento completo de estoque, com controle de produtos, entradas, saídas, relatórios e dashboard analítico. Implementado com Java Spring Boot e React.',
-      image: 'https://placehold.co/600x400/1a1a1a/cccccc?text=Sistema+de+Estoque',
-      technologies: ['Java', 'Spring Boot', 'React', 'MySQL', 'Docker', 'JWT'],
-      links: {
-        demo: '#',
-      },
-      featured: true,
-    },
-    {
-      id: 2,
-      title: 'Sistema de Barbearia',
-      description: 'Plataforma completa para gerenciamento de barbearias, incluindo agendamento online, gestão de clientes, controle financeiro e cadastro de serviços. Desenvolvido com Python Django e Vue.js.',
-      image: 'https://placehold.co/600x400/1a1a1a/cccccc?text=Sistema+de+Barbearia',
-      technologies: ['Python', 'Django', 'Vue.js', 'PostgreSQL', 'RESTful API'],
-      links: {
-        demo: '#',
-      },
-      featured: true,
-    },
-    {
-      id: 3,
-      title: 'Dashboard Analítico',
-      description: 'Dashboard interativo para visualização de dados empresariais, com gráficos dinâmicos, relatórios personalizados e análises preditivas.',
-      image: 'https://placehold.co/600x400/1a1a1a/cccccc?text=Dashboard+Analítico',
-      technologies: ['React', 'D3.js', 'Node.js', 'MongoDB'],
-      links: {
-        demo: '#',
-      },
-      featured: false,
-    },
-    {
-      id: 4,
-      title: 'API de Gestão de Tarefas',
-      description: 'API RESTful para gestão de tarefas e projetos, com autenticação JWT, permissões por níveis de usuário e documentação OpenAPI.',
-      image: 'https://placehold.co/600x400/1a1a1a/cccccc?text=API+Tarefas',
-      technologies: ['Java', 'Spring Boot', 'OAuth2', 'PostgreSQL', 'Swagger'],
-      links: {
-        demo: '#',
-      },
-      featured: false,
-    },
-  ];
+  // Carregar projetos do localStorage
+  useEffect(() => {
+    const savedProjects = localStorage.getItem('portfolio-projects');
+    
+    if (savedProjects) {
+      setProjects(JSON.parse(savedProjects));
+    } else {
+      // Projetos padrão caso não haja dados no localStorage
+      const defaultProjects = [
+        {
+          id: 1,
+          title: 'Sistema de Controle de Estoque',
+          description: 'Aplicação web para gerenciamento completo de estoque, com controle de produtos, entradas, saídas, relatórios e dashboard analítico.',
+          technologies: ['Java', 'Spring Boot', 'React', 'MySQL', 'Docker', 'JWT'],
+          images: ['https://placehold.co/600x400/1a1a1a/cccccc?text=Sistema+de+Estoque'],
+          links: {
+            demo: 'https://example.com/demo',
+            github: 'https://github.com/exemplo/estoque',
+          },
+          featured: true,
+        },
+        {
+          id: 2,
+          title: 'Sistema de Barbearia',
+          description: 'Plataforma completa para gerenciamento de barbearias, incluindo agendamento online.',
+          technologies: ['Python', 'Django', 'Vue.js', 'PostgreSQL', 'RESTful API'],
+          images: ['https://placehold.co/600x400/1a1a1a/cccccc?text=Sistema+de+Barbearia'],
+          links: {
+            demo: 'https://example.com/demo2',
+            github: 'https://github.com/exemplo/barbearia',
+          },
+          featured: true,
+        },
+      ];
+      
+      setProjects(defaultProjects);
+      localStorage.setItem('portfolio-projects', JSON.stringify(defaultProjects));
+    }
+  }, []);
   
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -128,20 +123,19 @@ const Projects: React.FC = () => {
         </div>
         
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-          {projects.map((project, index) => (
+          {projects.filter(project => project.featured).map((project, index) => (
             <div 
               key={project.id}
               className={cn(
                 "animate-on-scroll relative group rounded-xl overflow-hidden card-hover",
-                "border border-white/10 backdrop-blur-sm",
-                project.featured ? "md:col-span-1" : ""
+                "border border-white/10 backdrop-blur-sm"
               )}
               style={{ animationDelay: `${200 * index}ms` }}
               onClick={() => setSelectedProject(project)}
             >
               <div className="relative aspect-video overflow-hidden">
                 <img 
-                  src={project.image} 
+                  src={project.images && project.images.length > 0 ? project.images[0] : 'https://placehold.co/600x400/1a1a1a/cccccc?text=Sem+Imagem'} 
                   alt={project.title} 
                   className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
                 />
@@ -169,14 +163,28 @@ const Projects: React.FC = () => {
                 </div>
                 
                 <div className="flex gap-4">
-                  {project.links.demo && (
+                  {project.links && project.links.demo && (
                     <a 
                       href={project.links.demo}
                       className="flex items-center gap-1 text-sm text-gray-300 hover:text-highlight-green transition-colors"
                       onClick={(e) => e.stopPropagation()}
+                      target="_blank" 
+                      rel="noopener noreferrer"
                     >
                       <ExternalLink className="w-4 h-4" />
                       <span>Demo</span>
+                    </a>
+                  )}
+                  {project.links && project.links.github && (
+                    <a 
+                      href={project.links.github}
+                      className="flex items-center gap-1 text-sm text-gray-300 hover:text-highlight-blue transition-colors"
+                      onClick={(e) => e.stopPropagation()}
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                    >
+                      <ExternalLink className="w-4 h-4" />
+                      <span>GitHub</span>
                     </a>
                   )}
                 </div>
@@ -221,13 +229,15 @@ const Projects: React.FC = () => {
               </button>
             </div>
             
-            <div className="aspect-video w-full max-h-[300px] overflow-hidden">
-              <img 
-                src={selectedProject.image} 
-                alt={selectedProject.title} 
-                className="w-full h-full object-cover"
-              />
-            </div>
+            {selectedProject.images && selectedProject.images.length > 0 && (
+              <div className="aspect-video w-full max-h-[300px] overflow-hidden">
+                <img 
+                  src={selectedProject.images[0]} 
+                  alt={selectedProject.title} 
+                  className="w-full h-full object-cover"
+                />
+              </div>
+            )}
             
             <div className="p-5 pt-4">
               <h3 className="font-heading text-xl md:text-2xl font-bold mb-3">{selectedProject.title}</h3>
@@ -249,21 +259,8 @@ const Projects: React.FC = () => {
                 </div>
               </div>
               
-              <div className="mb-4">
-                <h4 className="font-semibold text-sm mb-2 flex items-center gap-2">
-                  <span>Principais Recursos</span>
-                </h4>
-                <ul className="list-disc list-inside text-gray-300 text-sm space-y-1 pl-1">
-                  <li>Interface de usuário intuitiva e responsiva</li>
-                  <li>Autenticação segura e gerenciamento de permissões</li>
-                  <li>Dashboard analítico com métricas em tempo real</li>
-                  <li>API RESTful bem documentada e extensível</li>
-                  <li>Implantação containerizada com Docker</li>
-                </ul>
-              </div>
-              
-              {selectedProject.links.demo && (
-                <div className="mt-5">
+              <div className="flex flex-wrap gap-4 mt-5">
+                {selectedProject.links && selectedProject.links.demo && (
                   <a 
                     href={selectedProject.links.demo}
                     className="inline-flex items-center gap-2 bg-highlight-blue hover:bg-highlight-blue/80 text-white px-4 py-2 text-sm rounded-full transition-all duration-300"
@@ -273,15 +270,25 @@ const Projects: React.FC = () => {
                     <ExternalLink className="w-4 h-4" />
                     <span>Ver Demo</span>
                   </a>
-                </div>
-              )}
-              
-              <div className="mt-5 flex justify-center">
+                )}
+                
+                {selectedProject.links && selectedProject.links.github && (
+                  <a 
+                    href={selectedProject.links.github}
+                    className="inline-flex items-center gap-2 bg-white/10 hover:bg-white/20 text-white px-4 py-2 text-sm rounded-full transition-all duration-300"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    <ExternalLink className="w-4 h-4" />
+                    <span>Ver Código</span>
+                  </a>
+                )}
+                
                 <button
                   onClick={() => setSelectedProject(null)}
-                  className="bg-white/10 hover:bg-white/20 text-white text-sm px-4 py-2 rounded-full transition-colors"
+                  className="inline-flex items-center gap-2 bg-white/10 hover:bg-white/20 text-white text-sm px-4 py-2 rounded-full transition-colors ml-auto"
                 >
-                  Fechar projeto
+                  Fechar
                 </button>
               </div>
             </div>

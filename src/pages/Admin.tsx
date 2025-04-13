@@ -109,10 +109,10 @@ const Admin = () => {
   
   // Contact Info State
   const [contactInfo, setContactInfo] = useState<ContactInfo>({
-    email: 'seu.email@example.com',
-    phone: '(85) 99999-9999',
-    linkedin: 'https://linkedin.com/in/felippe-kaue',
-    github: 'https://github.com/felippe-kaue'
+    email: 'f_kaue@hotmail.com',
+    phone: '+55 (85) 99288-4178',
+    linkedin: 'https://linkedin.com/in/felippegomes',
+    github: 'https://github.com/felippegomes'
   });
   
   // About Info State
@@ -174,6 +174,33 @@ const Admin = () => {
           featured: true,
         },
       ]);
+      
+      localStorage.setItem('portfolio-projects', JSON.stringify([
+        {
+          id: 1,
+          title: 'Sistema de Controle de Estoque',
+          description: 'Aplicação web para gerenciamento completo de estoque, com controle de produtos, entradas, saídas, relatórios e dashboard analítico.',
+          technologies: ['Java', 'Spring Boot', 'React', 'MySQL', 'Docker', 'JWT'],
+          images: ['https://placehold.co/600x400/1a1a1a/cccccc?text=Sistema+de+Estoque'],
+          links: {
+            demo: 'https://example.com/demo',
+            github: 'https://github.com/exemplo/estoque',
+          },
+          featured: true,
+        },
+        {
+          id: 2,
+          title: 'Sistema de Barbearia',
+          description: 'Plataforma completa para gerenciamento de barbearias, incluindo agendamento online.',
+          technologies: ['Python', 'Django', 'Vue.js', 'PostgreSQL', 'RESTful API'],
+          images: ['https://placehold.co/600x400/1a1a1a/cccccc?text=Sistema+de+Barbearia'],
+          links: {
+            demo: 'https://example.com/demo2',
+            github: 'https://github.com/exemplo/barbearia',
+          },
+          featured: true,
+        },
+      ]));
     }
 
     // Carregar experiências
@@ -182,34 +209,65 @@ const Admin = () => {
       setExperiences(JSON.parse(savedExperiences));
     } else {
       // Dados iniciais de exemplo para experiências
-      setExperiences([
+      const defaultExperiences = [
         {
           id: 1,
-          title: 'Desenvolvedor Full Stack',
-          company: 'Empresa XYZ',
-          period: 'Jan 2022 - Presente',
-          description: 'Desenvolvimento de aplicações web utilizando React, Node.js e MongoDB.'
+          title: "Analista de Suporte",
+          company: "I & B TECNOLOGIA LTDA",
+          period: "Atual",
+          description: "Suporte em sistema sindical\nAuxílio em demandas de desenvolvimento\nResolução de problemas técnicos relacionados ao sistema\nColaboração com a equipe de desenvolvimento para melhorar e atualizar funcionalidades"
         },
         {
           id: 2,
-          title: 'Desenvolvedor Back-end',
-          company: 'Empresa ABC',
-          period: 'Mar 2020 - Dez 2021',
-          description: 'Desenvolvimento de APIs RESTful com Java Spring Boot e PostgreSQL.'
+          title: "Técnico de Informática",
+          company: "Quarta Etapa",
+          period: "Anterior",
+          description: "Atendimento de chamados e resolução de problemas à distância por meio de ferramentas de acesso remoto\nRegistro de procedimentos, resolução de problemas, atualizações e mudanças realizadas no ambiente de TI\nGerenciamento de chamados e atendimento conforme os níveis de SLA acordados\nGerenciamento de inventário de equipamentos e peças, incluindo organização, reposição e descarte de itens obsoletos"
+        },
+        {
+          id: 3,
+          title: "Aprendiz Faturista",
+          company: "Rede Oto Kora Saúde",
+          period: "Anterior",
+          description: "Análise e conferência de contas médicas para faturamento\nAuditoria interna para correção de inconsistências\nManutenção de registros financeiros e relatórios"
         }
-      ]);
+      ];
+      
+      setExperiences(defaultExperiences);
+      localStorage.setItem('portfolio-experiences', JSON.stringify(defaultExperiences));
     }
 
     // Carregar informações de contato
     const savedContactInfo = localStorage.getItem('portfolio-contact');
     if (savedContactInfo) {
       setContactInfo(JSON.parse(savedContactInfo));
+    } else {
+      // Dados iniciais para contato
+      const defaultContactInfo = {
+        email: 'f_kaue@hotmail.com',
+        phone: '+55 (85) 99288-4178',
+        linkedin: 'https://linkedin.com/in/felippegomes',
+        github: 'https://github.com/felippegomes'
+      };
+      
+      setContactInfo(defaultContactInfo);
+      localStorage.setItem('portfolio-contact', JSON.stringify(defaultContactInfo));
     }
 
     // Carregar informações sobre mim
     const savedAboutInfo = localStorage.getItem('portfolio-about');
     if (savedAboutInfo) {
       setAboutInfo(JSON.parse(savedAboutInfo));
+    } else {
+      // Dados iniciais de exemplo para informações sobre
+      const defaultAboutInfo = {
+        summary: 'Desenvolvedor de Software com experiência em Python, Java e desenvolvimento web.',
+        education: ['Análise e Desenvolvimento de Sistemas (UNIFAMETRO)', 'Técnico em Informática (CEPEP)'],
+        interests: ['Desenvolvimento Web', 'Inteligência Artificial', 'Desenvolvimento Mobile']
+      };
+      
+      setAboutInfo(defaultAboutInfo);
+      localStorage.setItem('portfolio-about', JSON.stringify(defaultAboutInfo));
     }
   };
 
@@ -294,6 +352,7 @@ const Admin = () => {
     resetProjectForm();
     setIsEditing(false);
     setCurrentProject(null);
+    setShowProjectForm(false);
   };
 
   const handleEditProject = (project: Project) => {
@@ -306,6 +365,7 @@ const Admin = () => {
     setProjectGithubLink(project.links.github || '');
     setProjectFeatured(project.featured);
     setIsEditing(true);
+    setShowProjectForm(true);
   };
 
   const handleDeleteProject = (id: number) => {
@@ -489,7 +549,7 @@ const Admin = () => {
                             </span>
                           )}
                         </TableCell>
-                        <TableCell>{project.images.length}</TableCell>
+                        <TableCell>{project.images ? project.images.length : 0}</TableCell>
                         <TableCell>
                           <div className="flex gap-2">
                             <Button 
@@ -665,7 +725,13 @@ const Admin = () => {
                       
                       <div className="flex justify-end gap-2 pt-4">
                         <SheetClose asChild>
-                          <Button variant="outline">Cancelar</Button>
+                          <Button variant="outline" onClick={() => {
+                            resetProjectForm();
+                            setIsEditing(false);
+                            setCurrentProject(null);
+                          }}>
+                            Cancelar
+                          </Button>
                         </SheetClose>
                         <Button
                           onClick={isEditing ? handleUpdateProject : handleAddProject}
@@ -754,7 +820,7 @@ const Admin = () => {
                       
                       <div>
                         <label htmlFor={`description-${exp.id}`} className="block text-sm font-medium mb-1">
-                          Descrição
+                          Descrição (uma responsabilidade por linha)
                         </label>
                         <Textarea
                           id={`description-${exp.id}`}
@@ -763,7 +829,8 @@ const Admin = () => {
                             const updatedExp = { ...exp, description: e.target.value };
                             handleUpdateExperience(updatedExp);
                           }}
-                          className="min-h-[80px]"
+                          className="min-h-[120px]"
+                          placeholder="Responsabilidade 1&#10;Responsabilidade 2&#10;Responsabilidade 3"
                         />
                       </div>
                     </div>
@@ -865,12 +932,13 @@ Inteligência Artificial"
               
               <div>
                 <label htmlFor="phone" className="block text-sm font-medium mb-1">
-                  Telefone
+                  Telefone (com código do país e DDD)
                 </label>
                 <Input
                   id="phone"
                   value={contactInfo.phone}
                   onChange={(e) => setContactInfo({...contactInfo, phone: e.target.value})}
+                  placeholder="+55 (85) 99288-4178"
                 />
               </div>
               
@@ -882,6 +950,7 @@ Inteligência Artificial"
                   id="linkedin"
                   value={contactInfo.linkedin}
                   onChange={(e) => setContactInfo({...contactInfo, linkedin: e.target.value})}
+                  placeholder="https://linkedin.com/in/felippegomes"
                 />
               </div>
               
@@ -893,6 +962,7 @@ Inteligência Artificial"
                   id="github"
                   value={contactInfo.github}
                   onChange={(e) => setContactInfo({...contactInfo, github: e.target.value})}
+                  placeholder="https://github.com/felippegomes"
                 />
               </div>
               

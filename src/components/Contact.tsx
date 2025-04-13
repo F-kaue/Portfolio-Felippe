@@ -1,5 +1,5 @@
 
-import React, { useRef } from 'react';
+import React, { useRef, useEffect, useState } from 'react';
 import { Mail, Phone, MapPin, Github, Linkedin, Send } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
@@ -25,9 +25,44 @@ const formSchema = z.object({
   message: z.string().min(10, { message: "Mensagem deve ter pelo menos 10 caracteres" }),
 });
 
+interface ContactInfo {
+  email: string;
+  phone: string;
+  linkedin: string;
+  github: string;
+}
+
 const Contact: React.FC = () => {
   const sectionRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
+  const [contactInfo, setContactInfo] = useState<ContactInfo>({
+    email: 'f_kaue@hotmail.com',
+    phone: '+55 (85) 99288-4178',
+    linkedin: 'https://linkedin.com/in/felippegomes',
+    github: 'https://github.com/felippegomes'
+  });
+  
+  useEffect(() => {
+    // Carregar informações de contato do localStorage
+    const savedContactInfo = localStorage.getItem('portfolio-contact');
+    
+    if (savedContactInfo) {
+      try {
+        const parsedContactInfo = JSON.parse(savedContactInfo);
+        setContactInfo({
+          email: parsedContactInfo.email || 'f_kaue@hotmail.com',
+          phone: parsedContactInfo.phone || '+55 (85) 99288-4178',
+          linkedin: parsedContactInfo.linkedin || 'https://linkedin.com/in/felippegomes',
+          github: parsedContactInfo.github || 'https://github.com/felippegomes'
+        });
+      } catch (error) {
+        console.error("Erro ao carregar informações de contato:", error);
+      }
+    } else {
+      // Se não há dados no localStorage, salvar os padrões
+      localStorage.setItem('portfolio-contact', JSON.stringify(contactInfo));
+    }
+  }, []);
   
   // Initialize form with react-hook-form and zod validation
   const form = useForm<z.infer<typeof formSchema>>({
@@ -44,8 +79,11 @@ const Contact: React.FC = () => {
     // Format the message for WhatsApp
     const whatsappMessage = `*Nome:* ${values.name}%0A*Assunto:* ${values.subject}%0A*Mensagem:* ${values.message}`;
     
+    // Extract phone number without formatting
+    const phoneNumber = contactInfo.phone.replace(/\D/g, '');
+    
     // Create WhatsApp URL with the formatted message
-    const whatsappUrl = `https://wa.me/5585992884178?text=${whatsappMessage}`;
+    const whatsappUrl = `https://wa.me/${phoneNumber}?text=${whatsappMessage}`;
     
     // Open WhatsApp in a new tab
     window.open(whatsappUrl, '_blank');
@@ -84,8 +122,8 @@ const Contact: React.FC = () => {
                 </div>
                 <div>
                   <h3 className="font-medium text-lg mb-1">E-mail</h3>
-                  <a href="mailto:f_kaue@hotmail.com" className="text-gray-400 hover:text-highlight-blue transition-colors">
-                    f_kaue@hotmail.com
+                  <a href={`mailto:${contactInfo.email}`} className="text-gray-400 hover:text-highlight-blue transition-colors">
+                    {contactInfo.email}
                   </a>
                 </div>
               </div>
@@ -96,8 +134,8 @@ const Contact: React.FC = () => {
                 </div>
                 <div>
                   <h3 className="font-medium text-lg mb-1">WhatsApp</h3>
-                  <a href="https://wa.me/5585992884178" className="text-gray-400 hover:text-highlight-green transition-colors">
-                    +55 (85) 99288-4178
+                  <a href={`https://wa.me/${contactInfo.phone.replace(/\D/g, '')}`} className="text-gray-400 hover:text-highlight-green transition-colors">
+                    {contactInfo.phone}
                   </a>
                 </div>
               </div>
@@ -118,7 +156,7 @@ const Contact: React.FC = () => {
                 <h3 className="font-medium text-lg mb-3">Redes Sociais</h3>
                 <div className="flex space-x-4">
                   <a 
-                    href="https://github.com/felippegomes" 
+                    href={contactInfo.github} 
                     target="_blank" 
                     rel="noopener noreferrer"
                     className="bg-white/5 hover:bg-white/10 p-3 rounded-full transition-all duration-300"
@@ -126,7 +164,7 @@ const Contact: React.FC = () => {
                     <Github className="w-6 h-6" />
                   </a>
                   <a 
-                    href="https://linkedin.com/in/felippegomes" 
+                    href={contactInfo.linkedin} 
                     target="_blank" 
                     rel="noopener noreferrer"
                     className="bg-white/5 hover:bg-white/10 p-3 rounded-full transition-all duration-300"

@@ -1,5 +1,5 @@
 
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Calendar, Briefcase, Headset, FileText, Computer } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -15,50 +15,116 @@ interface TimelineItem {
 
 const Experience: React.FC = () => {
   const sectionRef = useRef<HTMLDivElement>(null);
+  const [experiences, setExperiences] = useState<TimelineItem[]>([]);
   
-  const timelineItems: TimelineItem[] = [
-    {
-      id: 1,
-      title: "Analista de Suporte",
-      company: "I & B TECNOLOGIA LTDA",
-      period: "Atual",
-      description: [
-        "Suporte em sistema sindical",
-        "Auxílio em demandas de desenvolvimento",
-        "Resolução de problemas técnicos relacionados ao sistema",
-        "Colaboração com a equipe de desenvolvimento para melhorar e atualizar funcionalidades"
-      ],
-      type: "work",
-      icon: Headset
-    },
-    {
-      id: 2,
-      title: "Técnico de Informática",
-      company: "Quarta Etapa",
-      period: "Anterior",
-      description: [
-        "Atendimento de chamados e resolução de problemas à distância por meio de ferramentas de acesso remoto",
-        "Registro de procedimentos, resolução de problemas, atualizações e mudanças realizadas no ambiente de TI",
-        "Gerenciamento de chamados e atendimento conforme os níveis de SLA acordados",
-        "Gerenciamento de inventário de equipamentos e peças, incluindo organização, reposição e descarte de itens obsoletos"
-      ],
-      type: "work",
-      icon: Computer
-    },
-    {
-      id: 3,
-      title: "Aprendiz Faturista",
-      company: "Rede Oto Kora Saúde",
-      period: "Anterior",
-      description: [
-        "Análise e conferência de contas médicas para faturamento",
-        "Auditoria interna para correção de inconsistências",
-        "Manutenção de registros financeiros e relatórios"
-      ],
-      type: "work",
-      icon: FileText
+  useEffect(() => {
+    // Carregar experiências do localStorage
+    const savedExperiences = localStorage.getItem('portfolio-experiences');
+    
+    if (savedExperiences) {
+      try {
+        // Converter experiências do formato do Admin para o formato do TimelineItem
+        const adminExperiences = JSON.parse(savedExperiences);
+        
+        const convertedExperiences = adminExperiences.map((exp: any) => {
+          // Converter descrição de string para array se necessário
+          const description = Array.isArray(exp.description)
+            ? exp.description
+            : exp.description.split('• ').filter((item: string) => item.trim() !== '').map((item: string) => item.trim());
+          
+          return {
+            id: exp.id,
+            title: exp.title,
+            company: exp.company,
+            period: exp.period,
+            description: description,
+            type: 'work' as const,
+            icon: getIconForTitle(exp.title)
+          };
+        });
+        
+        setExperiences(convertedExperiences);
+      } catch (error) {
+        console.error("Erro ao carregar experiências:", error);
+        setDefaultExperiences();
+      }
+    } else {
+      setDefaultExperiences();
     }
-  ];
+  }, []);
+  
+  const setDefaultExperiences = () => {
+    const defaultExperiences: TimelineItem[] = [
+      {
+        id: 1,
+        title: "Analista de Suporte",
+        company: "I & B TECNOLOGIA LTDA",
+        period: "Atual",
+        description: [
+          "Suporte em sistema sindical",
+          "Auxílio em demandas de desenvolvimento",
+          "Resolução de problemas técnicos relacionados ao sistema",
+          "Colaboração com a equipe de desenvolvimento para melhorar e atualizar funcionalidades"
+        ],
+        type: "work",
+        icon: Headset
+      },
+      {
+        id: 2,
+        title: "Técnico de Informática",
+        company: "Quarta Etapa",
+        period: "Anterior",
+        description: [
+          "Atendimento de chamados e resolução de problemas à distância por meio de ferramentas de acesso remoto",
+          "Registro de procedimentos, resolução de problemas, atualizações e mudanças realizadas no ambiente de TI",
+          "Gerenciamento de chamados e atendimento conforme os níveis de SLA acordados",
+          "Gerenciamento de inventário de equipamentos e peças, incluindo organização, reposição e descarte de itens obsoletos"
+        ],
+        type: "work",
+        icon: Computer
+      },
+      {
+        id: 3,
+        title: "Aprendiz Faturista",
+        company: "Rede Oto Kora Saúde",
+        period: "Anterior",
+        description: [
+          "Análise e conferência de contas médicas para faturamento",
+          "Auditoria interna para correção de inconsistências",
+          "Manutenção de registros financeiros e relatórios"
+        ],
+        type: "work",
+        icon: FileText
+      }
+    ];
+    
+    setExperiences(defaultExperiences);
+    
+    // Salvar no localStorage no formato do Admin para manter a consistência
+    const adminFormatExperiences = defaultExperiences.map(exp => ({
+      id: exp.id,
+      title: exp.title,
+      company: exp.company,
+      period: exp.period,
+      description: exp.description.join('\n')
+    }));
+    
+    localStorage.setItem('portfolio-experiences', JSON.stringify(adminFormatExperiences));
+  };
+  
+  const getIconForTitle = (title: string): React.ComponentType<any> => {
+    title = title.toLowerCase();
+    
+    if (title.includes('suporte') || title.includes('atendimento')) {
+      return Headset;
+    } else if (title.includes('técnico') || title.includes('tecnico') || title.includes('informática')) {
+      return Computer;
+    } else if (title.includes('faturista') || title.includes('fiscal') || title.includes('financeiro')) {
+      return FileText;
+    } else {
+      return Briefcase;
+    }
+  };
   
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -98,7 +164,7 @@ const Experience: React.FC = () => {
           {/* Timeline center line */}
           <div className="absolute left-4 lg:left-1/2 top-0 bottom-0 w-0.5 bg-white/10 -ml-0.5"></div>
           
-          {timelineItems.map((item, index) => (
+          {experiences.map((item, index) => (
             <div 
               key={item.id} 
               className={cn(
