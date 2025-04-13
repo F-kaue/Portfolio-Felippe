@@ -1,6 +1,6 @@
 
 import React, { useEffect, useRef } from 'react';
-import { Calendar, Briefcase, GraduationCap } from 'lucide-react';
+import { Calendar, Briefcase, Headset, FileText, Computer } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface TimelineItem {
@@ -8,8 +8,9 @@ interface TimelineItem {
   title: string;
   company: string;
   period: string;
-  description: string;
-  type: 'work' | 'education';
+  description: string[];
+  type: 'work';
+  icon: React.ComponentType<any>;
 }
 
 const Experience: React.FC = () => {
@@ -18,44 +19,45 @@ const Experience: React.FC = () => {
   const timelineItems: TimelineItem[] = [
     {
       id: 1,
-      title: "Desenvolvedor Fullstack",
-      company: "Empresa XYZ",
-      period: "2021 - Presente",
-      description: "Desenvolvimento de sistemas web completos utilizando React, Node.js e PostgreSQL. Implementação de APIs RESTful e integração com serviços externos.",
-      type: "work"
+      title: "Analista de Suporte",
+      company: "I & B TECNOLOGIA LTDA",
+      period: "Atual",
+      description: [
+        "Suporte em sistema sindical",
+        "Auxílio em demandas de desenvolvimento",
+        "Resolução de problemas técnicos relacionados ao sistema",
+        "Colaboração com a equipe de desenvolvimento para melhorar e atualizar funcionalidades"
+      ],
+      type: "work",
+      icon: Headset
     },
     {
       id: 2,
-      title: "Técnico em Desenvolvimento",
-      company: "Empresa ABC",
-      period: "2019 - 2021",
-      description: "Manutenção e desenvolvimento de sistemas legados em Java. Migração gradual para arquitetura de microsserviços.",
-      type: "work"
+      title: "Técnico de Informática",
+      company: "Quarta Etapa",
+      period: "Anterior",
+      description: [
+        "Atendimento de chamados e resolução de problemas à distância por meio de ferramentas de acesso remoto",
+        "Registro de procedimentos, resolução de problemas, atualizações e mudanças realizadas no ambiente de TI",
+        "Gerenciamento de chamados e atendimento conforme os níveis de SLA acordados",
+        "Gerenciamento de inventário de equipamentos e peças, incluindo organização, reposição e descarte de itens obsoletos"
+      ],
+      type: "work",
+      icon: Computer
     },
     {
       id: 3,
-      title: "Análise e Desenvolvimento de Sistemas",
-      company: "UNIFAMETRO",
-      period: "2018 - 2022",
-      description: "Graduação com foco em desenvolvimento de software, programação orientada a objetos e engenharia de software.",
-      type: "education"
-    },
-    {
-      id: 4,
-      title: "Técnico em Informática",
-      company: "CEPEP",
-      period: "2016 - 2018",
-      description: "Formação técnica com ênfase em programação, redes e banco de dados.",
-      type: "education"
-    },
-    {
-      id: 5,
-      title: "Estágio em Desenvolvimento",
-      company: "Startup DEF",
-      period: "2018 - 2019",
-      description: "Desenvolvimento de aplicações web com Python Django e frontend em jQuery.",
-      type: "work"
-    },
+      title: "Aprendiz Faturista",
+      company: "Rede Oto Kora Saúde",
+      period: "Anterior",
+      description: [
+        "Análise e conferência de contas médicas para faturamento",
+        "Auditoria interna para correção de inconsistências",
+        "Manutenção de registros financeiros e relatórios"
+      ],
+      type: "work",
+      icon: FileText
+    }
   ];
   
   useEffect(() => {
@@ -112,14 +114,10 @@ const Experience: React.FC = () => {
                   "absolute left-4 lg:left-1/2 -ml-3.5 mt-6",
                   "w-7 h-7 rounded-full flex items-center justify-center z-10",
                   "border-2 border-white/10",
-                  item.type === "work" ? "bg-highlight-blue" : "bg-highlight-green"
+                  "bg-highlight-blue"
                 )}
               >
-                {item.type === "work" ? (
-                  <Briefcase className="w-3.5 h-3.5 text-white" />
-                ) : (
-                  <GraduationCap className="w-3.5 h-3.5 text-white" />
-                )}
+                <item.icon className="w-3.5 h-3.5 text-white" />
               </div>
               
               {/* Timeline content */}
@@ -131,22 +129,21 @@ const Experience: React.FC = () => {
                   "bg-white/5 rounded-lg p-6 card-hover",
                   "border border-white/10 backdrop-blur-sm",
                   "transition-all duration-300",
-                  item.type === "work" ? "hover:border-highlight-blue/50" : "hover:border-highlight-green/50"
+                  "hover:border-highlight-blue/50"
                 )}>
                   <div className="flex flex-col-reverse lg:flex-col">
                     <div className="flex items-center mb-2">
-                      <Calendar 
-                        className={cn(
-                          "w-4 h-4 mr-2",
-                          item.type === "work" ? "text-highlight-blue" : "text-highlight-green"
-                        )}
-                      />
+                      <Calendar className="w-4 h-4 mr-2 text-highlight-blue" />
                       <span className="text-sm text-gray-400">{item.period}</span>
                     </div>
                     <h3 className="text-xl font-semibold mb-1">{item.title}</h3>
                   </div>
                   <p className="text-gray-300 font-medium mb-3">{item.company}</p>
-                  <p className="text-gray-400 text-sm">{item.description}</p>
+                  <ul className="text-gray-400 text-sm list-disc pl-4 space-y-1">
+                    {item.description.map((desc, i) => (
+                      <li key={i}>{desc}</li>
+                    ))}
+                  </ul>
                 </div>
               </div>
             </div>
