@@ -8,7 +8,7 @@ const Hero: React.FC = () => {
   const sectionRef = useRef<HTMLDivElement>(null);
   
   const codingTexts = [
-    'def desenvolvedor_fullstack():',
+    'def desenvolvedor_web():',
     'class DesenvolvimentoWeb:',
     '<Developer name="Felippe Kauê" />',
     'while(true) { learn(); code(); improve(); }',
@@ -53,8 +53,8 @@ const Hero: React.FC = () => {
         </div>
         
         <p className="animate-on-scroll delay-300 text-lg md:text-xl max-w-2xl mb-10 text-gray-400">
-          Desenvolvedor de Software apaixonado por criar soluções elegantes para problemas complexos.
-          Especializado em Python, Java e desenvolvimento web.
+          Desenvolvedor Web apaixonado por criar soluções elegantes para problemas complexos.
+          Especializado em Java, Python, React e integração de APIs com foco em automação.
         </p>
         
         <div className="animate-on-scroll delay-500 flex flex-col sm:flex-row gap-4">

@@ -33,23 +33,23 @@ const About: React.FC = () => {
   const cards = [
     {
       icon: <Code className="w-6 h-6 text-highlight-blue" />,
-      title: 'Desenvolvimento',
-      description: 'Especializado em desenvolvimento de software com foco em soluções web e aplicações empresariais, utilizando tecnologias modernas e melhores práticas.',
+      title: 'Desenvolvimento Web',
+      description: 'Desenvolvedor Web em constante aprendizado com atuação desde 2023 em projetos próprios e colaborativos, com foco em desenvolvimento web, integração com APIs e automação de processos.',
     },
     {
       icon: <GraduationCap className="w-6 h-6 text-highlight-green" />,
       title: 'Formação',
-      description: 'Graduação em Análise e Desenvolvimento de Sistemas pela UNIFAMETRO e formação técnica em Informática pelo CEPEP.',
+      description: 'Graduação em Análise e Desenvolvimento de Sistemas pela UNIFAMETRO e formação técnica em Informática pelo CEPEP. Concilio formação com aplicação prática e constante atualização.',
     },
     {
       icon: <Briefcase className="w-6 h-6 text-highlight-blue" />,
       title: 'Experiência',
-      description: 'Experiência em desenvolvimento de sistemas de gestão, aplicações web e soluções de software para diversos setores empresariais.',
+      description: 'Experiência em desenvolvimento de sistemas de gestão, aplicações web e soluções de software. Foco em soluções eficientes e escaláveis com boas práticas de versionamento.',
     },
     {
       icon: <Cpu className="w-6 h-6 text-highlight-green" />,
       title: 'Tecnologias',
-      description: 'Proficiente em Python, Java, JavaScript, HTML/CSS e frameworks modernos para desenvolvimento full-stack.',
+      description: 'Java, Python, React, HTML5, CSS3, JavaScript, MySQL, Git, GitHub, APIs, JSON, Linux. Foco atual em integração de APIs e automação de rotinas.',
     },
   ];
   
@@ -65,13 +65,19 @@ const About: React.FC = () => {
         
         <div className="max-w-3xl mx-auto text-center animate-on-scroll mb-16">
           <p className="text-lg text-gray-300 leading-relaxed mb-6">
-            Sou um desenvolvedor de software com paixão por criar experiências digitais elegantes e funcionais. 
-            Meu objetivo é desenvolver aplicações que não apenas atendam às necessidades do cliente, 
-            mas também proporcionem uma experiência excepcional ao usuário final.
+            Desenvolvedor Web em constante aprendizado com atuação desde 2023 em projetos próprios e colaborativos, 
+            com foco em desenvolvimento web, integração com APIs e automação de processos. Concilio minha formação 
+            com aplicação prática e constante atualização em tecnologias modernas.
+          </p>
+          <p className="text-lg text-gray-300 leading-relaxed mb-6">
+            Domino ferramentas como Git e GitHub, e atuo com foco em soluções eficientes e escaláveis, aplicando boas 
+            práticas de versionamento e integração contínua. Tenho experiência com consumo e implementação de APIs, 
+            além de interesse ativo por automação inteligente e IA aplicada ao desenvolvimento.
           </p>
           <p className="text-lg text-gray-300 leading-relaxed">
-            Com formação em Análise e Desenvolvimento de Sistemas e experiência em diversas tecnologias, 
-            estou sempre buscando aprimorar minhas habilidades e acompanhar as melhores práticas do mercado.
+            💼 Interesso-me por oportunidades em projetos, freelas, parcerias tecnológicas e contribuições para 
+            soluções inovadoras. Estou sempre aberto a desafios que envolvam desenvolvimento web, automações e 
+            integração de sistemas.
           </p>
         </div>
         
