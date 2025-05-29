@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -17,7 +16,8 @@ import {
   Image,
   Link,
   Save,
-  X
+  X,
+  Youtube
 } from 'lucide-react';
 import { useToast } from "@/hooks/use-toast";
 import { 
@@ -55,6 +55,7 @@ interface Project {
   links: {
     demo?: string;
     github?: string;
+    youtube?: string;
   };
   featured: boolean;
 }
@@ -100,6 +101,7 @@ const Admin = () => {
   const [projectImages, setProjectImages] = useState<string[]>([]);
   const [projectDemoLink, setProjectDemoLink] = useState('');
   const [projectGithubLink, setProjectGithubLink] = useState('');
+  const [projectYoutubeLink, setProjectYoutubeLink] = useState('');
   const [projectFeatured, setProjectFeatured] = useState(false);
   const [tempImageUrl, setTempImageUrl] = useState('');
   
@@ -158,6 +160,7 @@ const Admin = () => {
           links: {
             demo: 'https://example.com/demo',
             github: 'https://github.com/exemplo/estoque',
+            youtube: ''
           },
           featured: true,
         },
@@ -170,6 +173,7 @@ const Admin = () => {
           links: {
             demo: 'https://example.com/demo2',
             github: 'https://github.com/exemplo/barbearia',
+            youtube: ''
           },
           featured: true,
         },
@@ -185,6 +189,7 @@ const Admin = () => {
           links: {
             demo: 'https://example.com/demo',
             github: 'https://github.com/exemplo/estoque',
+            youtube: ''
           },
           featured: true,
         },
@@ -197,6 +202,7 @@ const Admin = () => {
           links: {
             demo: 'https://example.com/demo2',
             github: 'https://github.com/exemplo/barbearia',
+            youtube: ''
           },
           featured: true,
         },
@@ -311,6 +317,7 @@ const Admin = () => {
       links: {
         demo: projectDemoLink || undefined,
         github: projectGithubLink || undefined,
+        youtube: projectYoutubeLink || undefined,
       },
       featured: projectFeatured
     };
@@ -337,6 +344,7 @@ const Admin = () => {
       links: {
         demo: projectDemoLink || undefined,
         github: projectGithubLink || undefined,
+        youtube: projectYoutubeLink || undefined,
       },
       featured: projectFeatured
     };
@@ -363,6 +371,7 @@ const Admin = () => {
     setProjectImages(project.images || []);
     setProjectDemoLink(project.links.demo || '');
     setProjectGithubLink(project.links.github || '');
+    setProjectYoutubeLink(project.links.youtube || '');
     setProjectFeatured(project.featured);
     setIsEditing(true);
     setShowProjectForm(true);
@@ -386,6 +395,7 @@ const Admin = () => {
     setProjectImages([]);
     setProjectDemoLink('');
     setProjectGithubLink('');
+    setProjectYoutubeLink('');
     setProjectFeatured(false);
     setTempImageUrl('');
   };
@@ -708,6 +718,21 @@ const Admin = () => {
                           onChange={(e) => setProjectGithubLink(e.target.value)}
                           placeholder="https://github.com/usuario/projeto"
                         />
+                      </div>
+                      
+                      <div>
+                        <label htmlFor="youtubeLink" className="block text-sm font-medium mb-1">
+                          Link para Vídeo do YouTube
+                        </label>
+                        <Input
+                          id="youtubeLink"
+                          value={projectYoutubeLink}
+                          onChange={(e) => setProjectYoutubeLink(e.target.value)}
+                          placeholder="https://www.youtube.com/watch?v=..."
+                        />
+                        <p className="text-xs text-gray-400 mt-1">
+                          Cole o link completo do YouTube (pode ser não listado)
+                        </p>
                       </div>
                       
                       <div className="flex items-center space-x-2">
