@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useRef } from 'react';
 import { ExternalLink, X, ArrowLeft, Play, Youtube } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -24,66 +25,110 @@ const Projects: React.FC = () => {
   const isMobile = useIsMobile();
   const [projects, setProjects] = useState<Project[]>([]);
   
-  // Carregar projetos do localStorage com sincronização do admin
-  useEffect(() => {
-    const loadProjects = () => {
+  // Função para carregar projetos do localStorage
+  const loadProjects = () => {
+    try {
       const savedProjects = localStorage.getItem('portfolio-projects');
+      console.log('Carregando projetos do localStorage:', savedProjects);
       
       if (savedProjects) {
-        try {
-          const adminProjects = JSON.parse(savedProjects);
+        const parsedProjects = JSON.parse(savedProjects);
+        console.log('Projetos parseados:', parsedProjects);
+        
+        if (Array.isArray(parsedProjects) && parsedProjects.length > 0) {
+          const convertedProjects = parsedProjects.map((proj: any) => ({
+            id: proj.id || Date.now() + Math.random(),
+            title: proj.title || "Projeto sem título",
+            description: proj.description || "Descrição não informada",
+            technologies: Array.isArray(proj.technologies) ? proj.technologies : 
+                         typeof proj.technologies === 'string' ? proj.technologies.split(',').map((t: string) => t.trim()) : [],
+            images: Array.isArray(proj.images) ? proj.images : 
+                   typeof proj.images === 'string' ? [proj.images] : [],
+            links: {
+              demo: proj.links?.demo || proj.demo || '',
+              github: proj.links?.github || proj.github || '',
+              youtube: proj.links?.youtube || proj.youtube || ''
+            },
+            featured: proj.featured !== false
+          }));
           
-          if (Array.isArray(adminProjects) && adminProjects.length > 0) {
-            const convertedProjects = adminProjects.map((proj: any) => ({
-              id: proj.id || Date.now() + Math.random(),
-              title: proj.title || "Projeto sem título",
-              description: proj.description || "Descrição não informada",
-              technologies: Array.isArray(proj.technologies) ? proj.technologies : 
-                           typeof proj.technologies === 'string' ? proj.technologies.split(',').map((t: string) => t.trim()) : [],
-              images: Array.isArray(proj.images) ? proj.images : 
-                     typeof proj.images === 'string' ? [proj.images] : [],
-              links: {
-                demo: proj.demo || '',
-                github: proj.github || '',
-                youtube: proj.youtube || ''
-              },
-              featured: proj.featured !== false
-            }));
-            
-            setProjects(convertedProjects);
-          } else {
-            setProjects([]);
-          }
-        } catch (error) {
-          console.error("Erro ao carregar projetos:", error);
+          console.log('Projetos convertidos:', convertedProjects);
+          setProjects(convertedProjects);
+        } else {
+          console.log('Nenhum projeto válido encontrado no localStorage');
           setProjects([]);
         }
       } else {
+        console.log('Nenhum projeto encontrado no localStorage');
         setProjects([]);
       }
-    };
-    
+    } catch (error) {
+      console.error("Erro ao carregar projetos:", error);
+      setProjects([]);
+    }
+  };
+  
+  // Carregar projetos do localStorage com sincronização do admin
+  useEffect(() => {
     // Carregar projetos inicialmente
     loadProjects();
     
-    // Escutar mudanças no localStorage
+    // Escutar mudanças no localStorage (para mudanças em outras abas)
     const handleStorageChange = (e: StorageEvent) => {
       if (e.key === 'portfolio-projects') {
+        console.log('Detectada mudança no localStorage via StorageEvent');
         loadProjects();
       }
     };
     
-    // Escutar mudanças customizadas no localStorage
+    // Escutar evento customizado para mudanças no mesmo contexto
     const handleCustomStorageChange = () => {
+      console.log('Detectada mudança no localStorage via evento customizado');
       loadProjects();
     };
+    
+    // Verificar periodicamente por mudanças
+    const intervalId = setInterval(() => {
+      const currentData = localStorage.getItem('portfolio-projects');
+      const currentProjects = currentData ? JSON.parse(currentData) : [];
+      
+      // Comparar se há diferenças
+      if (JSON.stringify(currentProjects) !== JSON.stringify(projects)) {
+        console.log('Detectada mudança no localStorage via polling');
+        loadProjects();
+      }
+    }, 2000); // Verificar a cada 2 segundos
     
     window.addEventListener('storage', handleStorageChange);
     window.addEventListener('portfolioProjectsUpdated', handleCustomStorageChange);
     
+    // Adicionar evento para mudanças do localStorage no mesmo contexto
+    const originalSetItem = localStorage.setItem;
+    localStorage.setItem = function(key, value) {
+      const event = new CustomEvent('localStorageChange', {
+        detail: { key, value }
+      });
+      window.dispatchEvent(event);
+      return originalSetItem.apply(this, arguments);
+    };
+    
+    const handleLocalStorageChange = (e: any) => {
+      if (e.detail.key === 'portfolio-projects') {
+        console.log('Detectada mudança no localStorage via override');
+        loadProjects();
+      }
+    };
+    
+    window.addEventListener('localStorageChange', handleLocalStorageChange);
+    
     return () => {
       window.removeEventListener('storage', handleStorageChange);
       window.removeEventListener('portfolioProjectsUpdated', handleCustomStorageChange);
+      window.removeEventListener('localStorageChange', handleLocalStorageChange);
+      clearInterval(intervalId);
+      
+      // Restaurar o localStorage original
+      localStorage.setItem = originalSetItem;
     };
   }, []);
   
@@ -153,6 +198,8 @@ const Projects: React.FC = () => {
     
     return url;
   };
+
+  console.log('Renderizando Projects com', projects.length, 'projetos');
 
   return (
     <section id="projects" className="relative py-20 bg-[#0c0c0c]" ref={sectionRef}>
@@ -260,6 +307,7 @@ const Projects: React.FC = () => {
         ) : (
           <div className="text-center text-gray-400">
             <p>Nenhum projeto encontrado. Adicione projetos através do painel administrativo.</p>
+            <p className="text-sm mt-2">Debug: Projetos carregados = {projects.length}</p>
           </div>
         )}
       </div>

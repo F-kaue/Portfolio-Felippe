@@ -277,9 +277,18 @@ const Admin = () => {
     }
   };
 
-  // Função para salvar dados no localStorage
+  // Função para salvar dados no localStorage e disparar eventos de sincronização
   const saveData = (key: string, data: any) => {
     localStorage.setItem(key, JSON.stringify(data));
+    
+    // Disparar evento customizado para sincronização
+    window.dispatchEvent(new CustomEvent('portfolioProjectsUpdated'));
+    
+    // Disparar evento customizado adicional
+    window.dispatchEvent(new CustomEvent('localStorageChange', {
+      detail: { key, value: JSON.stringify(data) }
+    }));
+    
     toast({
       title: "Dados salvos",
       description: "Suas alterações foram salvas com sucesso.",
