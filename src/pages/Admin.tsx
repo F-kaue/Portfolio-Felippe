@@ -17,7 +17,8 @@ import {
   Link,
   Save,
   X,
-  Youtube
+  Youtube,
+  RefreshCw
 } from 'lucide-react';
 import { useToast } from "@/hooks/use-toast";
 import { 
@@ -277,22 +278,41 @@ const Admin = () => {
     }
   };
 
-  // Função para salvar dados no localStorage e disparar eventos de sincronização
+  // Função aprimorada para salvar dados no localStorage
   const saveData = (key: string, data: any) => {
-    localStorage.setItem(key, JSON.stringify(data));
+    const jsonData = JSON.stringify(data);
+    localStorage.setItem(key, jsonData);
     
-    // Disparar evento customizado para sincronização
-    window.dispatchEvent(new CustomEvent('portfolioProjectsUpdated'));
+    console.log(`Saving ${key}:`, jsonData);
     
-    // Disparar evento customizado adicional
-    window.dispatchEvent(new CustomEvent('localStorageChange', {
-      detail: { key, value: JSON.stringify(data) }
-    }));
-    
-    toast({
-      title: "Dados salvos",
-      description: "Suas alterações foram salvas com sucesso.",
-    });
+    // Disparar múltiplos eventos para garantir sincronização
+    setTimeout(() => {
+      window.dispatchEvent(new CustomEvent('portfolioProjectsUpdated'));
+      window.dispatchEvent(new CustomEvent('localStorageChange', {
+        detail: { key, value: jsonData }
+      }));
+      
+      toast({
+        title: "Dados salvos",
+        description: "Suas alterações foram salvas com sucesso.",
+      });
+    }, 100);
+  };
+
+  // Função para forçar sincronização
+  const forceSyncData = () => {
+    const projectsData = localStorage.getItem('portfolio-projects');
+    if (projectsData) {
+      window.dispatchEvent(new CustomEvent('portfolioProjectsUpdated'));
+      window.dispatchEvent(new CustomEvent('localStorageChange', {
+        detail: { key: 'portfolio-projects', value: projectsData }
+      }));
+      
+      toast({
+        title: "Sincronização forçada",
+        description: "Os dados foram sincronizados com a página principal.",
+      });
+    }
   };
 
   const handleLogout = () => {
@@ -479,14 +499,24 @@ const Admin = () => {
             <h1 className="text-2xl font-bold">Painel Administrativo</h1>
             <p className="text-gray-400">Gerencie o conteúdo do seu portfólio</p>
           </div>
-          <Button 
-            variant="outline" 
-            onClick={handleLogout}
-            className="flex items-center gap-2"
-          >
-            <LogOut size={16} />
-            Sair
-          </Button>
+          <div className="flex gap-2">
+            <Button 
+              variant="outline" 
+              onClick={forceSyncData}
+              className="flex items-center gap-2"
+            >
+              <RefreshCw size={16} />
+              Sincronizar
+            </Button>
+            <Button 
+              variant="outline" 
+              onClick={handleLogout}
+              className="flex items-center gap-2"
+            >
+              <LogOut size={16} />
+              Sair
+            </Button>
+          </div>
         </header>
 
         <Tabs defaultValue="projects" className="w-full">
