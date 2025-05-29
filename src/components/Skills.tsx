@@ -18,7 +18,6 @@ const Skills: React.FC = () => {
     { name: 'HTML/CSS', level: 85, category: 'frontend', color: '#E34F26' },
     { name: 'SQL', level: 80, category: 'backend', color: '#4479A1' },
     { name: 'Git', level: 85, category: 'tools', color: '#F05032' },
-    { name: 'Spring Boot', level: 75, category: 'backend', color: '#6DB33F' },
   ];
 
   const categories = [

@@ -61,10 +61,10 @@ const Experience: React.FC = () => {
         company: "I & B TECNOLOGIA LTDA",
         period: "Atual",
         description: [
-          "Suporte em sistema sindical",
-          "Auxílio em demandas de desenvolvimento",
-          "Resolução de problemas técnicos relacionados ao sistema",
-          "Colaboração com a equipe de desenvolvimento para melhorar e atualizar funcionalidades"
+          "Suporte especializado em sistema sindical com foco na resolução eficiente de demandas técnicas",
+          "Colaboração direta com equipe de desenvolvimento para implementação de melhorias e novas funcionalidades",
+          "Resolução de problemas técnicos complexos relacionados ao sistema, garantindo alta disponibilidade",
+          "Participação ativa no processo de desenvolvimento, oferecendo insights baseados na experiência de suporte"
         ],
         type: "work",
         icon: Headset
@@ -75,10 +75,10 @@ const Experience: React.FC = () => {
         company: "Quarta Etapa",
         period: "Anterior",
         description: [
-          "Atendimento de chamados e resolução de problemas à distância por meio de ferramentas de acesso remoto",
-          "Registro de procedimentos, resolução de problemas, atualizações e mudanças realizadas no ambiente de TI",
-          "Gerenciamento de chamados e atendimento conforme os níveis de SLA acordados",
-          "Gerenciamento de inventário de equipamentos e peças, incluindo organização, reposição e descarte de itens obsoletos"
+          "Atendimento especializado de chamados técnicos com resolução remota através de ferramentas avançadas de acesso",
+          "Documentação detalhada de procedimentos e soluções aplicadas no ambiente de TI corporativo",
+          "Gestão eficiente de chamados seguindo rigorosamente os níveis de SLA estabelecidos",
+          "Administração completa do inventário tecnológico, incluindo controle de lifecycle de equipamentos e otimização de recursos"
         ],
         type: "work",
         icon: Computer
@@ -89,9 +89,9 @@ const Experience: React.FC = () => {
         company: "Rede Oto Kora Saúde",
         period: "Anterior",
         description: [
-          "Análise e conferência de contas médicas para faturamento",
-          "Auditoria interna para correção de inconsistências",
-          "Manutenção de registros financeiros e relatórios"
+          "Análise criteriosa e conferência de contas médicas garantindo precisão no processo de faturamento",
+          "Execução de auditoria interna sistemática para identificação e correção de inconsistências financeiras",
+          "Manutenção organizada de registros financeiros e elaboração de relatórios gerenciais detalhados"
         ],
         type: "work",
         icon: FileText
