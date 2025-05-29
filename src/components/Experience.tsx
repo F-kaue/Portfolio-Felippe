@@ -1,4 +1,3 @@
-
 import React, { useEffect, useRef, useState } from 'react';
 import { Calendar, Briefcase, Headset, FileText, Computer } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -18,107 +17,68 @@ const Experience: React.FC = () => {
   const [experiences, setExperiences] = useState<TimelineItem[]>([]);
   
   useEffect(() => {
-    // Primeiro, definir as experiências padrão
-    const defaultExperiences: TimelineItem[] = [
-      {
-        id: 1,
-        title: "Analista de Suporte",
-        company: "I & B TECNOLOGIA LTDA",
-        period: "Atual",
-        description: [
-          "Suporte especializado em sistema sindical com foco na resolução eficiente de demandas técnicas",
-          "Colaboração direta com equipe de desenvolvimento para implementação de melhorias e novas funcionalidades",
-          "Resolução de problemas técnicos complexos relacionados ao sistema, garantindo alta disponibilidade",
-          "Participação ativa no processo de desenvolvimento, oferecendo insights baseados na experiência de suporte"
-        ],
-        type: "work",
-        icon: Headset
-      },
-      {
-        id: 2,
-        title: "Técnico de Informática",
-        company: "Quarta Etapa",
-        period: "Anterior",
-        description: [
-          "Atendimento especializado de chamados técnicos com resolução remota através de ferramentas avançadas de acesso",
-          "Documentação detalhada de procedimentos e soluções aplicadas no ambiente de TI corporativo",
-          "Gestão eficiente de chamados seguindo rigorosamente os níveis de SLA estabelecidos",
-          "Administração completa do inventário tecnológico, incluindo controle de lifecycle de equipamentos e otimização de recursos"
-        ],
-        type: "work",
-        icon: Computer
-      },
-      {
-        id: 3,
-        title: "Aprendiz Faturista",
-        company: "Rede Oto Kora Saúde",
-        period: "Anterior",
-        description: [
-          "Análise criteriosa e conferência de contas médicas garantindo precisão no processo de faturamento",
-          "Execução de auditoria interna sistemática para identificação e correção de inconsistências financeiras",
-          "Manutenção organizada de registros financeiros e elaboração de relatórios gerenciais detalhados"
-        ],
-        type: "work",
-        icon: FileText
-      }
-    ];
-
-    // Carregar experiências do localStorage ou usar as padrão
-    const savedExperiences = localStorage.getItem('portfolio-experiences');
-    
-    if (savedExperiences) {
-      try {
-        const adminExperiences = JSON.parse(savedExperiences);
-        
-        if (Array.isArray(adminExperiences) && adminExperiences.length > 0) {
-          const convertedExperiences = adminExperiences.map((exp: any) => {
-            // Converter descrição de string para array se necessário
-            let description = exp.description;
-            if (typeof description === 'string') {
-              description = description.split('\n').filter((item: string) => item.trim() !== '');
-            }
-            
-            return {
-              id: exp.id || Date.now() + Math.random(),
-              title: exp.title || "Cargo não informado",
-              company: exp.company || "Empresa não informada",
-              period: exp.period || "Período não informado",
-              description: Array.isArray(description) ? description : [description || "Descrição não informada"],
-              type: 'work' as const,
-              icon: getIconForTitle(exp.title || "")
-            };
-          });
+    const loadExperiences = () => {
+      const savedExperiences = localStorage.getItem('portfolio-experiences');
+      
+      if (savedExperiences) {
+        try {
+          const adminExperiences = JSON.parse(savedExperiences);
           
-          setExperiences(convertedExperiences);
-        } else {
-          // Se não há experiências válidas no localStorage, usar as padrão
-          setExperiences(defaultExperiences);
-          saveDefaultExperiences(defaultExperiences);
+          if (Array.isArray(adminExperiences) && adminExperiences.length > 0) {
+            const convertedExperiences = adminExperiences.map((exp: any) => {
+              // Converter descrição de string para array se necessário
+              let description = exp.description;
+              if (typeof description === 'string') {
+                description = description.split('\n').filter((item: string) => item.trim() !== '');
+              }
+              
+              return {
+                id: exp.id || Date.now() + Math.random(),
+                title: exp.title || "Cargo não informado",
+                company: exp.company || "Empresa não informada",
+                period: exp.period || "Período não informado",
+                description: Array.isArray(description) ? description : [description || "Descrição não informada"],
+                type: 'work' as const,
+                icon: getIconForTitle(exp.title || "")
+              };
+            });
+            
+            setExperiences(convertedExperiences);
+          } else {
+            setExperiences([]);
+          }
+        } catch (error) {
+          console.error("Erro ao carregar experiências:", error);
+          setExperiences([]);
         }
-      } catch (error) {
-        console.error("Erro ao carregar experiências:", error);
-        setExperiences(defaultExperiences);
-        saveDefaultExperiences(defaultExperiences);
+      } else {
+        setExperiences([]);
       }
-    } else {
-      // Se não existe no localStorage, usar as padrão
-      setExperiences(defaultExperiences);
-      saveDefaultExperiences(defaultExperiences);
-    }
-  }, []);
-  
-  const saveDefaultExperiences = (defaultExperiences: TimelineItem[]) => {
-    // Salvar no localStorage no formato do Admin para manter a consistência
-    const adminFormatExperiences = defaultExperiences.map(exp => ({
-      id: exp.id,
-      title: exp.title,
-      company: exp.company,
-      period: exp.period,
-      description: exp.description.join('\n')
-    }));
+    };
     
-    localStorage.setItem('portfolio-experiences', JSON.stringify(adminFormatExperiences));
-  };
+    // Carregar experiências inicialmente
+    loadExperiences();
+    
+    // Escutar mudanças no localStorage
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === 'portfolio-experiences') {
+        loadExperiences();
+      }
+    };
+    
+    // Escutar mudanças customizadas no localStorage
+    const handleCustomStorageChange = () => {
+      loadExperiences();
+    };
+    
+    window.addEventListener('storage', handleStorageChange);
+    window.addEventListener('portfolioExperiencesUpdated', handleCustomStorageChange);
+    
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+      window.removeEventListener('portfolioExperiencesUpdated', handleCustomStorageChange);
+    };
+  }, []);
   
   const getIconForTitle = (title: string): React.ComponentType<any> => {
     const lowerTitle = title.toLowerCase();
@@ -228,7 +188,7 @@ const Experience: React.FC = () => {
           </div>
         ) : (
           <div className="text-center text-gray-400">
-            <p>Carregando experiências...</p>
+            <p>Nenhuma experiência encontrada. Adicione experiências através do painel administrativo.</p>
           </div>
         )}
       </div>
