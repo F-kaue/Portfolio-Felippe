@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useRef } from 'react';
 import { ExternalLink, X, ArrowLeft, Play, Youtube } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -25,17 +26,17 @@ const Projects: React.FC = () => {
   const [projects, setProjects] = useState<Project[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   
-  // Função para carregar projetos do localStorage
+  // Função melhorada para carregar projetos
   const loadProjects = () => {
-    console.log('🔄 Carregando projetos...');
+    console.log('🔄 Iniciando carregamento de projetos...');
     setIsLoading(true);
     
     try {
       const savedProjects = localStorage.getItem('portfolio-projects');
-      console.log('📦 Dados do localStorage:', savedProjects);
+      console.log('📦 Raw localStorage data:', savedProjects);
       
       if (!savedProjects || savedProjects === 'null' || savedProjects === 'undefined') {
-        console.log('❌ Nenhum projeto encontrado no localStorage');
+        console.log('❌ localStorage está vazio ou inválido');
         setProjects([]);
         setIsLoading(false);
         return;
@@ -51,6 +52,7 @@ const Projects: React.FC = () => {
         return;
       }
 
+      // Validação e normalização melhorada
       const validProjects = parsedProjects
         .filter(proj => proj && typeof proj === 'object' && proj.title)
         .map((proj: any) => ({
@@ -59,8 +61,9 @@ const Projects: React.FC = () => {
           description: proj.description || "Descrição não informada",
           technologies: Array.isArray(proj.technologies) ? proj.technologies : 
                        typeof proj.technologies === 'string' ? proj.technologies.split(',').map((t: string) => t.trim()) : [],
-          images: Array.isArray(proj.images) ? proj.images : 
-                 typeof proj.images === 'string' ? [proj.images] : [],
+          images: Array.isArray(proj.images) ? proj.images.filter(img => img && img.trim()) : 
+                 typeof proj.images === 'string' && proj.images.trim() ? [proj.images.trim()] : 
+                 ['https://images.unsplash.com/photo-1555066931-4365d14bab8c?w=600&h=400&fit=crop'],
           links: {
             demo: proj.links?.demo || proj.demo || '',
             github: proj.links?.github || proj.github || '',
@@ -69,67 +72,62 @@ const Projects: React.FC = () => {
           featured: proj.featured !== false
         }));
       
-      console.log('✅ Projetos válidos carregados:', validProjects.length, validProjects);
+      console.log('✅ Projetos válidos processados:', validProjects.length, validProjects);
       setProjects(validProjects);
     } catch (error) {
-      console.error('❌ Erro ao carregar projetos:', error);
+      console.error('❌ Erro ao processar projetos:', error);
       setProjects([]);
     } finally {
       setIsLoading(false);
     }
   };
 
-  // Força recarregamento dos projetos
-  const forceReload = () => {
-    console.log('🔄 Forçando recarregamento...');
-    setTimeout(loadProjects, 100);
-  };
-
   useEffect(() => {
-    // Carregamento inicial
+    // Carregamento inicial imediato
     loadProjects();
 
     // Event listeners para sincronização
     const handleStorageChange = (e: StorageEvent) => {
       if (e.key === 'portfolio-projects') {
-        console.log('🔄 Storage change detectado');
-        loadProjects();
+        console.log('🔄 Storage change event detectado');
+        setTimeout(loadProjects, 100);
       }
     };
 
     const handleCustomUpdate = () => {
-      console.log('🔄 Custom update detectado');
-      loadProjects();
+      console.log('🔄 Custom update event detectado');
+      setTimeout(loadProjects, 100);
     };
 
     const handleFocus = () => {
       console.log('🔄 Foco na janela - recarregando');
-      loadProjects();
+      setTimeout(loadProjects, 200);
     };
 
     const handleVisibilityChange = () => {
       if (!document.hidden) {
         console.log('🔄 Página visível - recarregando');
-        loadProjects();
+        setTimeout(loadProjects, 200);
       }
     };
 
-    // Polling mais agressivo para garantir sincronização
+    // Polling para garantir sincronização
     const pollInterval = setInterval(() => {
       const currentData = localStorage.getItem('portfolio-projects');
-      if (currentData) {
+      if (currentData && currentData !== 'null') {
         try {
           const currentProjects = JSON.parse(currentData);
-          if (JSON.stringify(currentProjects) !== JSON.stringify(projects)) {
-            console.log('🔄 Polling detectou mudança');
+          if (Array.isArray(currentProjects) && currentProjects.length !== projects.length) {
+            console.log('🔄 Polling detectou mudança no número de projetos');
             loadProjects();
           }
         } catch (error) {
           console.error('❌ Erro no polling:', error);
         }
       }
-    }, 500); // Verifica a cada 500ms
+    }, 1000);
 
+    // Registrar todos os listeners
     window.addEventListener('storage', handleStorageChange);
     window.addEventListener('portfolioProjectsUpdated', handleCustomUpdate);
     window.addEventListener('localStorageChange', handleCustomUpdate);
@@ -144,7 +142,7 @@ const Projects: React.FC = () => {
       document.removeEventListener('visibilitychange', handleVisibilityChange);
       clearInterval(pollInterval);
     };
-  }, []);
+  }, [projects.length]);
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -209,43 +207,61 @@ const Projects: React.FC = () => {
       return `https://www.youtube.com/embed/${match[2]}?autoplay=1&rel=0&modestbranding=1`;
     }
     
-    return url;
+    return url.includes('embed') ? url : `https://www.youtube.com/embed/${url}`;
+  };
+
+  const forceReload = () => {
+    console.log('🔄 Forçando recarregamento manual...');
+    setIsLoading(true);
+    setTimeout(() => {
+      loadProjects();
+      window.dispatchEvent(new Event('portfolioProjectsUpdated'));
+    }, 500);
   };
 
   return (
-    <section id="projects" className="relative py-20 bg-[#0c0c0c]" ref={sectionRef}>
-      <div className="section-container">
+    <section id="projects" className="relative py-20 bg-[#0a0a0a] min-h-screen" ref={sectionRef}>
+      <div className="section-container max-w-7xl mx-auto px-4">
         <div className="text-center mb-16">
-          <h2 className="animate-on-scroll text-3xl md:text-4xl font-bold mb-4">
-            Meus <span className="gradient-text">Projetos</span>
+          <h2 className="animate-on-scroll text-3xl md:text-4xl font-bold mb-4 text-white">
+            Meus <span className="bg-gradient-to-r from-blue-400 to-purple-600 bg-clip-text text-transparent">Projetos</span>
           </h2>
-          <div className="animate-on-scroll w-20 h-1 bg-highlight-blue mx-auto rounded-full"></div>
+          <div className="animate-on-scroll w-20 h-1 bg-blue-500 mx-auto rounded-full"></div>
+          <p className="text-gray-400 mt-4 max-w-2xl mx-auto">
+            Explore meus trabalhos e projetos desenvolvidos com diferentes tecnologias
+          </p>
         </div>
         
         {isLoading ? (
-          <div className="text-center text-gray-400">
-            <div className="animate-spin w-8 h-8 border-2 border-highlight-blue border-t-transparent rounded-full mx-auto mb-4"></div>
+          <div className="text-center text-gray-400 py-20">
+            <div className="animate-spin w-8 h-8 border-2 border-blue-500 border-t-transparent rounded-full mx-auto mb-4"></div>
             <p>Carregando projetos...</p>
           </div>
         ) : projects.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {projects.filter(project => project.featured).map((project, index) => (
               <div 
                 key={project.id}
                 className={cn(
-                  "animate-on-scroll relative group rounded-xl overflow-hidden card-hover",
-                  "border border-white/10 backdrop-blur-sm cursor-pointer"
+                  "animate-on-scroll relative group rounded-xl overflow-hidden",
+                  "bg-gray-900 border border-gray-800 hover:border-gray-600",
+                  "transition-all duration-300 hover:transform hover:scale-105 hover:shadow-2xl",
+                  "cursor-pointer"
                 )}
                 style={{ animationDelay: `${200 * index}ms` }}
                 onClick={() => setSelectedProject(project)}
               >
                 <div className="relative aspect-video overflow-hidden">
                   <img 
-                    src={project.images && project.images.length > 0 ? project.images[0] : 'https://placehold.co/600x400/1a1a1a/cccccc?text=Sem+Imagem'} 
+                    src={project.images && project.images.length > 0 ? project.images[0] : 'https://images.unsplash.com/photo-1555066931-4365d14bab8c?w=600&h=400&fit=crop'} 
                     alt={project.title} 
                     className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                    onError={(e) => {
+                      const target = e.target as HTMLImageElement;
+                      target.src = 'https://images.unsplash.com/photo-1555066931-4365d14bab8c?w=600&h=400&fit=crop';
+                    }}
                   />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent opacity-70 group-hover:opacity-90 transition-opacity duration-300"></div>
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent"></div>
                   
                   {project.links?.youtube && (
                     <div className="absolute top-4 right-4">
@@ -255,40 +271,50 @@ const Projects: React.FC = () => {
                           setSelectedProject(project);
                           setShowYouTubeModal(true);
                         }}
-                        className="bg-red-600 hover:bg-red-700 text-white p-2 rounded-full transition-colors"
-                        title="Ver vídeo"
+                        className="bg-red-600 hover:bg-red-700 text-white p-3 rounded-full transition-all duration-300 shadow-lg hover:shadow-red-500/25"
+                        title="Assistir vídeo do projeto"
                       >
-                        <Youtube className="w-4 h-4" />
+                        <Youtube className="w-5 h-5" />
                       </button>
                     </div>
                   )}
+                  
+                  <div className="absolute inset-0 bg-blue-600/0 group-hover:bg-blue-600/10 transition-all duration-300 flex items-center justify-center">
+                    <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                      <Play className="w-12 h-12 text-white" />
+                    </div>
+                  </div>
                 </div>
                 
                 <div className="p-6 relative z-10">
-                  <h3 className="font-heading text-xl font-bold mb-3">{project.title}</h3>
-                  <p className="text-gray-300 text-sm mb-4 line-clamp-3">{project.description}</p>
+                  <h3 className="text-xl font-bold mb-3 text-white group-hover:text-blue-400 transition-colors">
+                    {project.title}
+                  </h3>
+                  <p className="text-gray-400 text-sm mb-4 line-clamp-2 leading-relaxed">
+                    {project.description}
+                  </p>
                   
                   <div className="flex flex-wrap gap-2 mb-4">
-                    {project.technologies.slice(0, 4).map((tech, i) => (
+                    {project.technologies.slice(0, 3).map((tech, i) => (
                       <span 
                         key={i} 
-                        className="bg-white/10 text-xs px-3 py-1 rounded-full"
+                        className="bg-gray-800 border border-gray-700 text-gray-300 text-xs px-3 py-1 rounded-full hover:bg-gray-700 transition-colors"
                       >
                         {tech}
                       </span>
                     ))}
-                    {project.technologies.length > 4 && (
-                      <span className="bg-white/10 text-xs px-3 py-1 rounded-full">
-                        +{project.technologies.length - 4}
+                    {project.technologies.length > 3 && (
+                      <span className="bg-blue-600/20 border border-blue-500/30 text-blue-400 text-xs px-3 py-1 rounded-full">
+                        +{project.technologies.length - 3}
                       </span>
                     )}
                   </div>
                   
-                  <div className="flex gap-4">
-                    {project.links && project.links.demo && (
+                  <div className="flex gap-4 text-sm">
+                    {project.links?.demo && (
                       <a 
                         href={project.links.demo}
-                        className="flex items-center gap-1 text-sm text-gray-300 hover:text-highlight-green transition-colors"
+                        className="flex items-center gap-1 text-gray-400 hover:text-blue-400 transition-colors"
                         onClick={(e) => e.stopPropagation()}
                         target="_blank" 
                         rel="noopener noreferrer"
@@ -297,44 +323,57 @@ const Projects: React.FC = () => {
                         <span>Demo</span>
                       </a>
                     )}
-                    {project.links && project.links.github && (
+                    {project.links?.github && (
                       <a 
                         href={project.links.github}
-                        className="flex items-center gap-1 text-sm text-gray-300 hover:text-highlight-blue transition-colors"
+                        className="flex items-center gap-1 text-gray-400 hover:text-purple-400 transition-colors"
                         onClick={(e) => e.stopPropagation()}
                         target="_blank" 
                         rel="noopener noreferrer"
                       >
                         <ExternalLink className="w-4 h-4" />
-                        <span>GitHub</span>
+                        <span>Código</span>
                       </a>
                     )}
+                    {project.links?.youtube && (
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setSelectedProject(project);
+                          setShowYouTubeModal(true);
+                        }}
+                        className="flex items-center gap-1 text-gray-400 hover:text-red-400 transition-colors"
+                      >
+                        <Youtube className="w-4 h-4" />
+                        <span>Vídeo</span>
+                      </button>
+                    )}
                   </div>
-                </div>
-                
-                <div className="absolute inset-0 bg-black/80 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                  <button className="bg-highlight-blue hover:bg-highlight-blue/80 text-white px-6 py-3 rounded-full transition-all duration-300 font-medium">
-                    Ver Detalhes
-                  </button>
                 </div>
               </div>
             ))}
           </div>
         ) : (
-          <div className="text-center text-gray-400 space-y-4">
-            <p className="text-lg">Nenhum projeto encontrado</p>
-            <p className="text-sm">Adicione projetos através do painel administrativo.</p>
-            <div className="space-y-2">
+          <div className="text-center text-gray-400 space-y-6 py-20">
+            <div className="text-6xl mb-4">📁</div>
+            <h3 className="text-xl font-semibold text-white">Nenhum projeto encontrado</h3>
+            <p className="text-gray-500 max-w-md mx-auto">
+              Parece que não há projetos cadastrados ainda. Adicione alguns projetos através do painel administrativo.
+            </p>
+            
+            <div className="space-y-4">
               <button 
                 onClick={forceReload}
-                className="bg-highlight-blue hover:bg-highlight-blue/80 text-white px-6 py-3 rounded-lg transition-colors font-medium"
+                className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg transition-colors font-medium inline-flex items-center gap-2"
               >
                 🔄 Recarregar Projetos
               </button>
-              <div className="text-xs text-gray-500">
-                <p>Debug info:</p>
+              
+              <div className="text-xs text-gray-600 bg-gray-900 rounded-lg p-4 max-w-md mx-auto">
+                <p className="font-semibold mb-2">Debug Info:</p>
                 <p>localStorage: {localStorage.getItem('portfolio-projects') ? 'Presente' : 'Vazio'}</p>
                 <p>Projetos carregados: {projects.length}</p>
+                <p>Última verificação: {new Date().toLocaleTimeString()}</p>
               </div>
             </div>
           </div>
@@ -344,56 +383,56 @@ const Projects: React.FC = () => {
       {/* Modal de detalhes do projeto */}
       {selectedProject && !showYouTubeModal && (
         <div 
-          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm"
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm"
           onClick={() => setSelectedProject(null)}
         >
           <div 
-            className="relative bg-[#0c0c0c] border border-white/10 rounded-xl w-full max-h-[90vh] overflow-auto animate-fade-in"
-            style={{ maxWidth: isMobile ? '100%' : '800px' }}
+            className="relative bg-gray-900 border border-gray-700 rounded-xl w-full max-h-[90vh] overflow-auto animate-fade-in"
+            style={{ maxWidth: isMobile ? '100%' : '900px' }}
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="sticky top-0 z-10 flex justify-between items-center p-3 bg-[#0c0c0c]/90 backdrop-blur-sm border-b border-white/10">
+            <div className="sticky top-0 z-10 flex justify-between items-center p-4 bg-gray-900/95 backdrop-blur-sm border-b border-gray-700">
               <button 
                 className="flex items-center gap-2 text-gray-400 hover:text-white transition-colors"
                 onClick={() => setSelectedProject(null)}
-                aria-label="Voltar aos projetos"
               >
                 <ArrowLeft className="h-4 w-4" />
                 <span className="text-sm">Voltar</span>
               </button>
               
               <button 
-                className="bg-white/10 hover:bg-white/20 rounded-full p-1.5 transition-colors"
+                className="bg-gray-800 hover:bg-gray-700 rounded-full p-2 transition-colors"
                 onClick={() => setSelectedProject(null)}
-                aria-label="Fechar detalhes do projeto"
               >
-                <X className="h-4 w-4" />
+                <X className="h-4 w-4 text-gray-400" />
               </button>
             </div>
             
             {selectedProject.images && selectedProject.images.length > 0 && (
-              <div className="aspect-video w-full max-h-[300px] overflow-hidden">
+              <div className="aspect-video w-full max-h-[400px] overflow-hidden">
                 <img 
                   src={selectedProject.images[0]} 
                   alt={selectedProject.title} 
                   className="w-full h-full object-cover"
+                  onError={(e) => {
+                    const target = e.target as HTMLImageElement;
+                    target.src = 'https://images.unsplash.com/photo-1555066931-4365d14bab8c?w=600&h=400&fit=crop';
+                  }}
                 />
               </div>
             )}
             
-            <div className="p-5 pt-4">
-              <h3 className="font-heading text-xl md:text-2xl font-bold mb-3">{selectedProject.title}</h3>
-              <p className="text-gray-300 text-sm mb-4">{selectedProject.description}</p>
+            <div className="p-6">
+              <h3 className="text-2xl font-bold mb-4 text-white">{selectedProject.title}</h3>
+              <p className="text-gray-300 mb-6 leading-relaxed">{selectedProject.description}</p>
               
-              <div className="mb-4">
-                <h4 className="font-semibold text-sm mb-2 flex items-center gap-2">
-                  <span>Tecnologias</span>
-                </h4>
+              <div className="mb-6">
+                <h4 className="font-semibold text-white mb-3">Tecnologias Utilizadas</h4>
                 <div className="flex flex-wrap gap-2">
                   {selectedProject.technologies.map((tech, i) => (
                     <span 
                       key={i} 
-                      className="bg-white/10 text-xs px-2.5 py-0.5 rounded-full"
+                      className="bg-gray-800 border border-gray-600 text-gray-300 text-sm px-3 py-1 rounded-full"
                     >
                       {tech}
                     </span>
@@ -401,11 +440,11 @@ const Projects: React.FC = () => {
                 </div>
               </div>
               
-              <div className="flex flex-wrap gap-4 mt-5">
+              <div className="flex flex-wrap gap-4">
                 {selectedProject.links?.demo && (
                   <a 
                     href={selectedProject.links.demo}
-                    className="inline-flex items-center gap-2 bg-highlight-blue hover:bg-highlight-blue/80 text-white px-4 py-2 text-sm rounded-full transition-all duration-300"
+                    className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg transition-colors font-medium"
                     target="_blank"
                     rel="noopener noreferrer"
                   >
@@ -417,7 +456,7 @@ const Projects: React.FC = () => {
                 {selectedProject.links?.github && (
                   <a 
                     href={selectedProject.links.github}
-                    className="inline-flex items-center gap-2 bg-white/10 hover:bg-white/20 text-white px-4 py-2 text-sm rounded-full transition-all duration-300"
+                    className="inline-flex items-center gap-2 bg-gray-700 hover:bg-gray-600 text-white px-6 py-3 rounded-lg transition-colors font-medium"
                     target="_blank"
                     rel="noopener noreferrer"
                   >
@@ -429,19 +468,12 @@ const Projects: React.FC = () => {
                 {selectedProject.links?.youtube && (
                   <button
                     onClick={() => setShowYouTubeModal(true)}
-                    className="inline-flex items-center gap-2 bg-red-600 hover:bg-red-700 text-white px-4 py-2 text-sm rounded-full transition-all duration-300"
+                    className="inline-flex items-center gap-2 bg-red-600 hover:bg-red-700 text-white px-6 py-3 rounded-lg transition-colors font-medium"
                   >
                     <Youtube className="w-4 h-4" />
-                    <span>Ver Vídeo</span>
+                    <span>Assistir Vídeo</span>
                   </button>
                 )}
-                
-                <button
-                  onClick={() => setSelectedProject(null)}
-                  className="inline-flex items-center gap-2 bg-white/10 hover:bg-white/20 text-white text-sm px-4 py-2 rounded-full transition-colors ml-auto"
-                >
-                  Fechar
-                </button>
               </div>
             </div>
           </div>
@@ -455,29 +487,35 @@ const Projects: React.FC = () => {
           onClick={() => setShowYouTubeModal(false)}
         >
           <div 
-            className="relative bg-black rounded-xl w-full max-h-[90vh] overflow-hidden animate-fade-in"
-            style={{ maxWidth: isMobile ? '100%' : '900px' }}
+            className="relative bg-black rounded-xl w-full max-h-[90vh] overflow-hidden animate-fade-in shadow-2xl"
+            style={{ maxWidth: isMobile ? '100%' : '1000px' }}
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="flex justify-between items-center p-4 bg-black/90 backdrop-blur-sm">
-              <h3 className="text-white font-semibold">{selectedProject.title} - Vídeo</h3>
+            <div className="flex justify-between items-center p-4 bg-gray-900/95 backdrop-blur-sm border-b border-gray-700">
+              <h3 className="text-white font-semibold text-lg">{selectedProject.title} - Demonstração</h3>
               <button 
-                className="bg-white/10 hover:bg-white/20 rounded-full p-2 transition-colors"
+                className="bg-gray-800 hover:bg-gray-700 rounded-full p-2 transition-colors"
                 onClick={() => setShowYouTubeModal(false)}
-                aria-label="Fechar vídeo"
               >
                 <X className="h-5 w-5 text-white" />
               </button>
             </div>
             
-            <div className="aspect-video">
+            <div className="aspect-video bg-black">
               <iframe
                 src={getYouTubeEmbedUrl(selectedProject.links.youtube)}
-                title={`Vídeo do projeto ${selectedProject.title}`}
+                title={`Vídeo demonstrativo do projeto ${selectedProject.title}`}
                 className="w-full h-full"
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
                 allowFullScreen
+                style={{ border: 'none' }}
               />
+            </div>
+            
+            <div className="p-4 bg-gray-900">
+              <p className="text-gray-300 text-sm text-center">
+                Pressione ESC para fechar ou clique fora do vídeo
+              </p>
             </div>
           </div>
         </div>
