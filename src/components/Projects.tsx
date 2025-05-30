@@ -3,18 +3,17 @@ import React, { useState, useEffect, useRef } from 'react';
 import { ExternalLink, X, ArrowLeft, Play, Youtube } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { supabase } from '@/integrations/supabase/client';
 
 interface Project {
-  id: number;
+  id: string;
   title: string;
   description: string;
   technologies: string[];
   images: string[];
-  links: {
-    demo?: string;
-    github?: string;
-    youtube?: string;
-  };
+  demo_link?: string;
+  github_link?: string;
+  youtube_link?: string;
   featured: boolean;
 }
 
@@ -26,54 +25,50 @@ const Projects: React.FC = () => {
   const [projects, setProjects] = useState<Project[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   
-  // Função melhorada para carregar projetos
-  const loadProjects = () => {
-    console.log('🔄 Iniciando carregamento de projetos...');
+  // Função para carregar projetos do Supabase
+  const loadProjects = async () => {
+    console.log('🔄 Iniciando carregamento de projetos do Supabase...');
     setIsLoading(true);
     
     try {
-      const savedProjects = localStorage.getItem('portfolio-projects');
-      console.log('📦 Raw localStorage data:', savedProjects);
-      
-      if (!savedProjects || savedProjects === 'null' || savedProjects === 'undefined') {
-        console.log('❌ localStorage está vazio ou inválido');
+      const { data, error } = await supabase
+        .from('projects')
+        .select('*')
+        .eq('featured', true)
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        console.error('❌ Erro ao carregar projetos:', error);
         setProjects([]);
         setIsLoading(false);
         return;
       }
 
-      const parsedProjects = JSON.parse(savedProjects);
-      console.log('📋 Projetos parseados:', parsedProjects);
+      console.log('📦 Raw Supabase data:', data);
       
-      if (!Array.isArray(parsedProjects)) {
+      if (!data || !Array.isArray(data)) {
         console.log('❌ Dados não são um array válido');
         setProjects([]);
         setIsLoading(false);
         return;
       }
 
-      // Validação e normalização melhorada
-      const validProjects = parsedProjects
-        .filter(proj => proj && typeof proj === 'object' && proj.title)
-        .map((proj: any) => ({
-          id: proj.id || Date.now() + Math.random(),
-          title: proj.title || "Projeto sem título",
-          description: proj.description || "Descrição não informada",
-          technologies: Array.isArray(proj.technologies) ? proj.technologies : 
-                       typeof proj.technologies === 'string' ? proj.technologies.split(',').map((t: string) => t.trim()) : [],
-          images: Array.isArray(proj.images) ? proj.images.filter(img => img && img.trim()) : 
-                 typeof proj.images === 'string' && proj.images.trim() ? [proj.images.trim()] : 
-                 ['https://images.unsplash.com/photo-1555066931-4365d14bab8c?w=600&h=400&fit=crop'],
-          links: {
-            demo: proj.links?.demo || proj.demo || '',
-            github: proj.links?.github || proj.github || '',
-            youtube: proj.links?.youtube || proj.youtube || ''
-          },
-          featured: proj.featured !== false
-        }));
+      // Formatação dos projetos
+      const formattedProjects = data.map((proj: any) => ({
+        id: proj.id,
+        title: proj.title || "Projeto sem título",
+        description: proj.description || "Descrição não informada",
+        technologies: proj.technologies || [],
+        images: proj.images && proj.images.length > 0 ? proj.images : 
+               ['https://images.unsplash.com/photo-1555066931-4365d14bab8c?w=600&h=400&fit=crop'],
+        demo_link: proj.demo_link,
+        github_link: proj.github_link,
+        youtube_link: proj.youtube_link,
+        featured: proj.featured
+      }));
       
-      console.log('✅ Projetos válidos processados:', validProjects.length, validProjects);
-      setProjects(validProjects);
+      console.log('✅ Projetos formatados:', formattedProjects.length, formattedProjects);
+      setProjects(formattedProjects);
     } catch (error) {
       console.error('❌ Erro ao processar projetos:', error);
       setProjects([]);
@@ -83,66 +78,30 @@ const Projects: React.FC = () => {
   };
 
   useEffect(() => {
-    // Carregamento inicial imediato
+    // Carregamento inicial
     loadProjects();
 
-    // Event listeners para sincronização
-    const handleStorageChange = (e: StorageEvent) => {
-      if (e.key === 'portfolio-projects') {
-        console.log('🔄 Storage change event detectado');
-        setTimeout(loadProjects, 100);
-      }
-    };
-
-    const handleCustomUpdate = () => {
-      console.log('🔄 Custom update event detectado');
-      setTimeout(loadProjects, 100);
-    };
-
-    const handleFocus = () => {
-      console.log('🔄 Foco na janela - recarregando');
-      setTimeout(loadProjects, 200);
-    };
-
-    const handleVisibilityChange = () => {
-      if (!document.hidden) {
-        console.log('🔄 Página visível - recarregando');
-        setTimeout(loadProjects, 200);
-      }
-    };
-
-    // Polling para garantir sincronização
-    const pollInterval = setInterval(() => {
-      const currentData = localStorage.getItem('portfolio-projects');
-      if (currentData && currentData !== 'null') {
-        try {
-          const currentProjects = JSON.parse(currentData);
-          if (Array.isArray(currentProjects) && currentProjects.length !== projects.length) {
-            console.log('🔄 Polling detectou mudança no número de projetos');
-            loadProjects();
-          }
-        } catch (error) {
-          console.error('❌ Erro no polling:', error);
+    // Setup realtime subscription
+    const channel = supabase
+      .channel('projects-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'projects'
+        },
+        (payload) => {
+          console.log('🔄 Mudança detectada na tabela projects:', payload);
+          loadProjects();
         }
-      }
-    }, 1000);
+      )
+      .subscribe();
 
-    // Registrar todos os listeners
-    window.addEventListener('storage', handleStorageChange);
-    window.addEventListener('portfolioProjectsUpdated', handleCustomUpdate);
-    window.addEventListener('localStorageChange', handleCustomUpdate);
-    window.addEventListener('focus', handleFocus);
-    document.addEventListener('visibilitychange', handleVisibilityChange);
-    
     return () => {
-      window.removeEventListener('storage', handleStorageChange);
-      window.removeEventListener('portfolioProjectsUpdated', handleCustomUpdate);
-      window.removeEventListener('localStorageChange', handleCustomUpdate);
-      window.removeEventListener('focus', handleFocus);
-      document.removeEventListener('visibilitychange', handleVisibilityChange);
-      clearInterval(pollInterval);
+      supabase.removeChannel(channel);
     };
-  }, [projects.length]);
+  }, []);
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -212,11 +171,7 @@ const Projects: React.FC = () => {
 
   const forceReload = () => {
     console.log('🔄 Forçando recarregamento manual...');
-    setIsLoading(true);
-    setTimeout(() => {
-      loadProjects();
-      window.dispatchEvent(new Event('portfolioProjectsUpdated'));
-    }, 500);
+    loadProjects();
   };
 
   return (
@@ -239,7 +194,7 @@ const Projects: React.FC = () => {
           </div>
         ) : projects.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {projects.filter(project => project.featured).map((project, index) => (
+            {projects.map((project, index) => (
               <div 
                 key={project.id}
                 className={cn(
@@ -263,7 +218,7 @@ const Projects: React.FC = () => {
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent"></div>
                   
-                  {project.links?.youtube && (
+                  {project.youtube_link && (
                     <div className="absolute top-4 right-4">
                       <button
                         onClick={(e) => {
@@ -311,9 +266,9 @@ const Projects: React.FC = () => {
                   </div>
                   
                   <div className="flex gap-4 text-sm">
-                    {project.links?.demo && (
+                    {project.demo_link && (
                       <a 
-                        href={project.links.demo}
+                        href={project.demo_link}
                         className="flex items-center gap-1 text-gray-400 hover:text-blue-400 transition-colors"
                         onClick={(e) => e.stopPropagation()}
                         target="_blank" 
@@ -323,9 +278,9 @@ const Projects: React.FC = () => {
                         <span>Demo</span>
                       </a>
                     )}
-                    {project.links?.github && (
+                    {project.github_link && (
                       <a 
-                        href={project.links.github}
+                        href={project.github_link}
                         className="flex items-center gap-1 text-gray-400 hover:text-purple-400 transition-colors"
                         onClick={(e) => e.stopPropagation()}
                         target="_blank" 
@@ -335,7 +290,7 @@ const Projects: React.FC = () => {
                         <span>Código</span>
                       </a>
                     )}
-                    {project.links?.youtube && (
+                    {project.youtube_link && (
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
@@ -371,7 +326,7 @@ const Projects: React.FC = () => {
               
               <div className="text-xs text-gray-600 bg-gray-900 rounded-lg p-4 max-w-md mx-auto">
                 <p className="font-semibold mb-2">Debug Info:</p>
-                <p>localStorage: {localStorage.getItem('portfolio-projects') ? 'Presente' : 'Vazio'}</p>
+                <p>Fonte: Supabase Database</p>
                 <p>Projetos carregados: {projects.length}</p>
                 <p>Última verificação: {new Date().toLocaleTimeString()}</p>
               </div>
@@ -441,9 +396,9 @@ const Projects: React.FC = () => {
               </div>
               
               <div className="flex flex-wrap gap-4">
-                {selectedProject.links?.demo && (
+                {selectedProject.demo_link && (
                   <a 
-                    href={selectedProject.links.demo}
+                    href={selectedProject.demo_link}
                     className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg transition-colors font-medium"
                     target="_blank"
                     rel="noopener noreferrer"
@@ -453,9 +408,9 @@ const Projects: React.FC = () => {
                   </a>
                 )}
                 
-                {selectedProject.links?.github && (
+                {selectedProject.github_link && (
                   <a 
-                    href={selectedProject.links.github}
+                    href={selectedProject.github_link}
                     className="inline-flex items-center gap-2 bg-gray-700 hover:bg-gray-600 text-white px-6 py-3 rounded-lg transition-colors font-medium"
                     target="_blank"
                     rel="noopener noreferrer"
@@ -465,7 +420,7 @@ const Projects: React.FC = () => {
                   </a>
                 )}
                 
-                {selectedProject.links?.youtube && (
+                {selectedProject.youtube_link && (
                   <button
                     onClick={() => setShowYouTubeModal(true)}
                     className="inline-flex items-center gap-2 bg-red-600 hover:bg-red-700 text-white px-6 py-3 rounded-lg transition-colors font-medium"
@@ -481,7 +436,7 @@ const Projects: React.FC = () => {
       )}
       
       {/* Modal do YouTube */}
-      {showYouTubeModal && selectedProject?.links?.youtube && (
+      {showYouTubeModal && selectedProject?.youtube_link && (
         <div 
           className="fixed inset-0 z-60 flex items-center justify-center p-4 bg-black/90 backdrop-blur-sm"
           onClick={() => setShowYouTubeModal(false)}
@@ -503,7 +458,7 @@ const Projects: React.FC = () => {
             
             <div className="aspect-video bg-black">
               <iframe
-                src={getYouTubeEmbedUrl(selectedProject.links.youtube)}
+                src={getYouTubeEmbedUrl(selectedProject.youtube_link)}
                 title={`Vídeo demonstrativo do projeto ${selectedProject.title}`}
                 className="w-full h-full"
                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"

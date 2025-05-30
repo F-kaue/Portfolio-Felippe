@@ -10,18 +10,17 @@ import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
 import { Plus, Trash2, Edit, Save, X, RefreshCw } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
 
 interface Project {
-  id: number;
+  id: string;
   title: string;
   description: string;
   technologies: string[];
   images: string[];
-  links: {
-    demo?: string;
-    github?: string;
-    youtube?: string;
-  };
+  demo_link?: string;
+  github_link?: string;
+  youtube_link?: string;
   featured: boolean;
 }
 
@@ -31,117 +30,76 @@ const Admin = () => {
   const [projects, setProjects] = useState<Project[]>([]);
   const [editingProject, setEditingProject] = useState<Project | null>(null);
   const [isNewProject, setIsNewProject] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
-  // Função para carregar projetos do localStorage
-  const loadProjects = () => {
+  // Função para carregar projetos do Supabase
+  const loadProjects = async () => {
     try {
-      const savedProjects = localStorage.getItem('portfolio-projects');
-      if (savedProjects) {
-        const parsedProjects = JSON.parse(savedProjects);
-        if (Array.isArray(parsedProjects)) {
-          setProjects(parsedProjects);
-        } else {
-          setProjects([]);
-        }
-      } else {
-        setProjects([]);
+      setIsLoading(true);
+      const { data, error } = await supabase
+        .from('projects')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        console.error('Erro ao carregar projetos:', error);
+        toast({
+          title: "Erro!",
+          description: "Erro ao carregar projetos do banco de dados.",
+          variant: "destructive"
+        });
+        return;
       }
-    } catch (error) {
-      console.error("Erro ao carregar projetos:", error);
-      setProjects([]);
-    }
-  };
 
-  // Função melhorada para salvar no localStorage e forçar sincronização
-  const saveProjectsToStorage = (projectsToSave: Project[]) => {
-    try {
-      const dataToSave = JSON.stringify(projectsToSave);
-      localStorage.setItem('portfolio-projects', dataToSave);
-      console.log('💾 Projetos salvos no localStorage:', dataToSave);
-      
-      // Disparar múltiplos eventos para garantir sincronização
-      window.dispatchEvent(new Event('portfolioProjectsUpdated'));
-      window.dispatchEvent(new Event('localStorageChange'));
-      window.dispatchEvent(new StorageEvent('storage', {
-        key: 'portfolio-projects',
-        newValue: dataToSave,
-        storageArea: localStorage
-      }));
-      
-      console.log('📡 Eventos de sincronização disparados');
-      
-      // Forçar uma nova verificação após um delay
-      setTimeout(() => {
-        window.dispatchEvent(new Event('portfolioProjectsUpdated'));
-      }, 100);
-      
-      toast({
-        title: "Sucesso!",
-        description: "Projetos salvos e sincronizados com sucesso.",
-      });
+      const formattedProjects = data?.map(proj => ({
+        id: proj.id,
+        title: proj.title,
+        description: proj.description || '',
+        technologies: proj.technologies || [],
+        images: proj.images || [],
+        demo_link: proj.demo_link,
+        github_link: proj.github_link,
+        youtube_link: proj.youtube_link,
+        featured: proj.featured
+      })) || [];
+
+      setProjects(formattedProjects);
+      console.log('Projetos carregados:', formattedProjects);
     } catch (error) {
-      console.error('❌ Erro ao salvar projetos:', error);
+      console.error('Erro ao processar projetos:', error);
       toast({
         title: "Erro!",
-        description: "Erro ao salvar projetos. Tente novamente.",
+        description: "Erro ao processar dados dos projetos.",
         variant: "destructive"
       });
+    } finally {
+      setIsLoading(false);
     }
   };
 
   useEffect(() => {
     loadProjects();
-
-    const handleStorageChange = () => {
-      loadProjects();
-    };
-
-    window.addEventListener('storage', handleStorageChange);
-
-    return () => {
-      window.removeEventListener('storage', handleStorageChange);
-    };
   }, []);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    const target = e.target as HTMLInputElement;
-    const { name, value, type } = target;
-    const checked = target.checked;
+    const { name, value } = e.target;
 
     setEditingProject(prev => {
       if (!prev) return prev;
 
-      if (type === 'checkbox') {
-        return { ...prev, [name]: checked };
-      }
-
       if (name === 'technologies') {
-        return { ...prev, technologies: value.split(',').map(t => t.trim()) };
+        return { ...prev, technologies: value.split(',').map(t => t.trim()).filter(t => t) };
       }
 
       if (name === 'images') {
-        return { ...prev, images: value.split(',').map(i => i.trim()) };
+        return { ...prev, images: value.split(',').map(i => i.trim()).filter(i => i) };
       }
 
       return { ...prev, [name]: value };
     });
   };
 
-  const handleLinkChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setEditingProject(prev => {
-      if (!prev) return prev;
-      return {
-        ...prev,
-        links: {
-          ...prev.links,
-          [name]: value
-        }
-      };
-    });
-  };
-
-  const handleSaveProject = () => {
+  const handleSaveProject = async () => {
     if (!editingProject?.title.trim()) {
       toast({
         title: "Erro!",
@@ -151,46 +109,88 @@ const Admin = () => {
       return;
     }
 
-    let updatedProjects;
-    if (isNewProject) {
-      const newProject = {
-        ...editingProject,
-        id: Date.now()
+    try {
+      const projectData = {
+        title: editingProject.title.trim(),
+        description: editingProject.description?.trim() || '',
+        technologies: editingProject.technologies || [],
+        images: editingProject.images || [],
+        demo_link: editingProject.demo_link?.trim() || null,
+        github_link: editingProject.github_link?.trim() || null,
+        youtube_link: editingProject.youtube_link?.trim() || null,
+        featured: editingProject.featured
       };
-      updatedProjects = [...projects, newProject];
-    } else {
-      updatedProjects = projects.map(p => 
-        p.id === editingProject.id ? editingProject : p
-      );
-    }
 
-    setProjects(updatedProjects);
-    saveProjectsToStorage(updatedProjects);
-    setEditingProject(null);
-    setIsNewProject(false);
-  };
+      let result;
+      if (isNewProject) {
+        result = await supabase
+          .from('projects')
+          .insert([projectData])
+          .select();
+      } else {
+        result = await supabase
+          .from('projects')
+          .update(projectData)
+          .eq('id', editingProject.id)
+          .select();
+      }
 
-  const handleDeleteProject = (id: number) => {
-    const updatedProjects = projects.filter(p => p.id !== id);
-    setProjects(updatedProjects);
-    saveProjectsToStorage(updatedProjects);
-  };
+      if (result.error) {
+        console.error('Erro ao salvar projeto:', result.error);
+        toast({
+          title: "Erro!",
+          description: "Erro ao salvar projeto no banco de dados.",
+          variant: "destructive"
+        });
+        return;
+      }
 
-  // Função para forçar sincronização manual
-  const forceSyncProjects = () => {
-    console.log('🔄 Forçando sincronização manual...');
-    const currentData = localStorage.getItem('portfolio-projects');
-    if (currentData) {
-      window.dispatchEvent(new Event('portfolioProjectsUpdated'));
-      window.dispatchEvent(new Event('localStorageChange'));
       toast({
-        title: "Sincronização forçada!",
-        description: "Os projetos devem aparecer na página principal agora.",
+        title: "Sucesso!",
+        description: `Projeto ${isNewProject ? 'criado' : 'atualizado'} com sucesso!`,
       });
-    } else {
+
+      setEditingProject(null);
+      setIsNewProject(false);
+      await loadProjects(); // Recarregar a lista
+    } catch (error) {
+      console.error('Erro ao salvar projeto:', error);
       toast({
-        title: "Aviso!",
-        description: "Nenhum projeto encontrado para sincronizar.",
+        title: "Erro!",
+        description: "Erro inesperado ao salvar projeto.",
+        variant: "destructive"
+      });
+    }
+  };
+
+  const handleDeleteProject = async (id: string) => {
+    try {
+      const { error } = await supabase
+        .from('projects')
+        .delete()
+        .eq('id', id);
+
+      if (error) {
+        console.error('Erro ao deletar projeto:', error);
+        toast({
+          title: "Erro!",
+          description: "Erro ao deletar projeto.",
+          variant: "destructive"
+        });
+        return;
+      }
+
+      toast({
+        title: "Sucesso!",
+        description: "Projeto deletado com sucesso!",
+      });
+
+      await loadProjects(); // Recarregar a lista
+    } catch (error) {
+      console.error('Erro ao deletar projeto:', error);
+      toast({
+        title: "Erro!",
+        description: "Erro inesperado ao deletar projeto.",
         variant: "destructive"
       });
     }
@@ -206,12 +206,13 @@ const Admin = () => {
           </div>
           <div className="flex gap-4">
             <Button
-              onClick={forceSyncProjects}
+              onClick={loadProjects}
               variant="outline"
               className="flex items-center gap-2"
+              disabled={isLoading}
             >
-              <RefreshCw className="w-4 h-4" />
-              Sincronizar
+              <RefreshCw className={`w-4 h-4 ${isLoading ? 'animate-spin' : ''}`} />
+              Atualizar
             </Button>
             <Button onClick={() => navigate('/')}>
               Voltar ao Portfólio
@@ -221,7 +222,9 @@ const Admin = () => {
 
         <Tabs defaultValue="projects" className="space-y-6">
           <TabsList>
-            <TabsTrigger value="projects">Projetos ({projects.length})</TabsTrigger>
+            <TabsTrigger value="projects">
+              Projetos ({isLoading ? '...' : projects.length})
+            </TabsTrigger>
             <TabsTrigger value="settings">Configurações</TabsTrigger>
           </TabsList>
 
@@ -231,12 +234,14 @@ const Admin = () => {
               <Button
                 onClick={() => {
                   setEditingProject({
-                    id: 0,
+                    id: '',
                     title: '',
                     description: '',
                     technologies: [],
                     images: [],
-                    links: { demo: '', github: '', youtube: '' },
+                    demo_link: '',
+                    github_link: '',
+                    youtube_link: '',
                     featured: true
                   });
                   setIsNewProject(true);
@@ -248,19 +253,28 @@ const Admin = () => {
               </Button>
             </div>
 
-            {projects.length === 0 ? (
+            {isLoading ? (
+              <Card>
+                <CardContent className="text-center py-12">
+                  <div className="animate-spin w-8 h-8 border-2 border-blue-500 border-t-transparent rounded-full mx-auto mb-4"></div>
+                  <p className="text-gray-500">Carregando projetos...</p>
+                </CardContent>
+              </Card>
+            ) : projects.length === 0 ? (
               <Card>
                 <CardContent className="text-center py-12">
                   <p className="text-gray-500 mb-4">Nenhum projeto cadastrado ainda.</p>
                   <Button
                     onClick={() => {
                       setEditingProject({
-                        id: 0,
+                        id: '',
                         title: '',
                         description: '',
                         technologies: [],
                         images: [],
-                        links: { demo: '', github: '', youtube: '' },
+                        demo_link: '',
+                        github_link: '',
+                        youtube_link: '',
                         featured: true
                       });
                       setIsNewProject(true);
@@ -326,14 +340,14 @@ const Admin = () => {
                         <div>
                           <h4 className="font-medium mb-2">Links:</h4>
                           <div className="text-sm text-gray-600 space-y-1">
-                            {project.links.demo && (
-                              <div>Demo: {project.links.demo}</div>
+                            {project.demo_link && (
+                              <div>Demo: {project.demo_link}</div>
                             )}
-                            {project.links.github && (
-                              <div>GitHub: {project.links.github}</div>
+                            {project.github_link && (
+                              <div>GitHub: {project.github_link}</div>
                             )}
-                            {project.links.youtube && (
-                              <div>YouTube: {project.links.youtube}</div>
+                            {project.youtube_link && (
+                              <div>YouTube: {project.youtube_link}</div>
                             )}
                           </div>
                         </div>
@@ -369,21 +383,12 @@ const Admin = () => {
                   </div>
                   
                   <div className="pt-4 border-t">
-                    <h4 className="font-medium mb-4">Debug Information</h4>
+                    <h4 className="font-medium mb-4">Informações do Sistema</h4>
                     <div className="text-sm text-gray-600 space-y-2">
-                      <div>localStorage Status: {localStorage.getItem('portfolio-projects') ? '✅ Presente' : '❌ Vazio'}</div>
+                      <div>Banco de Dados: ✅ Supabase Conectado</div>
                       <div>Projetos Carregados: {projects.length}</div>
                       <div>Última Atualização: {new Date().toLocaleString()}</div>
                     </div>
-                    
-                    <Button
-                      onClick={forceSyncProjects}
-                      variant="outline"
-                      className="mt-4 flex items-center gap-2"
-                    >
-                      <RefreshCw className="w-4 h-4" />
-                      Forçar Sincronização
-                    </Button>
                   </div>
                 </div>
               </CardContent>
@@ -393,7 +398,7 @@ const Admin = () => {
 
         {editingProject && (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-            <Card className="max-w-2xl w-full">
+            <Card className="max-w-2xl w-full max-h-[90vh] overflow-y-auto">
               <CardHeader className="flex justify-between items-center">
                 <CardTitle>{isNewProject ? 'Novo Projeto' : 'Editar Projeto'}</CardTitle>
                 <Button variant="ghost" size="sm" onClick={() => setEditingProject(null)}>
@@ -403,12 +408,13 @@ const Admin = () => {
               <CardContent className="space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium leading-none mb-1">Título</label>
+                    <label className="block text-sm font-medium leading-none mb-1">Título *</label>
                     <Input
                       type="text"
                       name="title"
                       value={editingProject.title}
                       onChange={handleChange}
+                      placeholder="Nome do projeto"
                     />
                   </div>
                   <div>
@@ -437,6 +443,7 @@ const Admin = () => {
                     name="description"
                     value={editingProject.description}
                     onChange={handleChange}
+                    placeholder="Descreva seu projeto..."
                   />
                 </div>
 
@@ -447,6 +454,7 @@ const Admin = () => {
                     name="technologies"
                     value={editingProject.technologies.join(', ')}
                     onChange={handleChange}
+                    placeholder="React, TypeScript, Node.js"
                   />
                 </div>
 
@@ -457,6 +465,7 @@ const Admin = () => {
                     name="images"
                     value={editingProject.images.join(', ')}
                     onChange={handleChange}
+                    placeholder="https://exemplo.com/imagem1.jpg, https://exemplo.com/imagem2.jpg"
                   />
                 </div>
 
@@ -465,32 +474,35 @@ const Admin = () => {
                     <label className="block text-sm font-medium leading-none mb-1">Demo Link</label>
                     <Input
                       type="text"
-                      name="demo"
-                      value={editingProject.links.demo || ''}
-                      onChange={handleLinkChange}
+                      name="demo_link"
+                      value={editingProject.demo_link || ''}
+                      onChange={handleChange}
+                      placeholder="https://projeto-demo.com"
                     />
                   </div>
                   <div>
                     <label className="block text-sm font-medium leading-none mb-1">GitHub Link</label>
                     <Input
                       type="text"
-                      name="github"
-                      value={editingProject.links.github || ''}
-                      onChange={handleLinkChange}
+                      name="github_link"
+                      value={editingProject.github_link || ''}
+                      onChange={handleChange}
+                      placeholder="https://github.com/usuario/repo"
                     />
                   </div>
                   <div>
                     <label className="block text-sm font-medium leading-none mb-1">YouTube Link</label>
                     <Input
                       type="text"
-                      name="youtube"
-                      value={editingProject.links.youtube || ''}
-                      onChange={handleLinkChange}
+                      name="youtube_link"
+                      value={editingProject.youtube_link || ''}
+                      onChange={handleChange}
+                      placeholder="https://youtube.com/watch?v=..."
                     />
                   </div>
                 </div>
 
-                <div className="flex justify-end gap-2">
+                <div className="flex justify-end gap-2 pt-4">
                   <Button variant="ghost" onClick={() => setEditingProject(null)}>
                     Cancelar
                   </Button>
