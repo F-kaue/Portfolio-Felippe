@@ -23,99 +23,113 @@ const Projects: React.FC = () => {
   const [showYouTubeModal, setShowYouTubeModal] = useState(false);
   const isMobile = useIsMobile();
   const [projects, setProjects] = useState<Project[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   
-  // Função melhorada para carregar projetos do localStorage
+  // Função para carregar projetos do localStorage
   const loadProjects = () => {
+    console.log('🔄 Carregando projetos...');
+    setIsLoading(true);
+    
     try {
       const savedProjects = localStorage.getItem('portfolio-projects');
-      console.log('Raw localStorage data:', savedProjects);
+      console.log('📦 Dados do localStorage:', savedProjects);
       
-      if (savedProjects && savedProjects !== 'undefined' && savedProjects !== 'null') {
-        const parsedProjects = JSON.parse(savedProjects);
-        console.log('Parsed projects:', parsedProjects);
-        
-        if (Array.isArray(parsedProjects)) {
-          const validProjects = parsedProjects
-            .filter(proj => proj && typeof proj === 'object')
-            .map((proj: any) => ({
-              id: proj.id || Date.now() + Math.random(),
-              title: proj.title || "Projeto sem título",
-              description: proj.description || "Descrição não informada",
-              technologies: Array.isArray(proj.technologies) ? proj.technologies : 
-                           typeof proj.technologies === 'string' ? proj.technologies.split(',').map((t: string) => t.trim()) : [],
-              images: Array.isArray(proj.images) ? proj.images : 
-                     typeof proj.images === 'string' ? [proj.images] : [],
-              links: {
-                demo: proj.links?.demo || proj.demo || '',
-                github: proj.links?.github || proj.github || '',
-                youtube: proj.links?.youtube || proj.youtube || ''
-              },
-              featured: proj.featured !== false
-            }));
-          
-          console.log('Valid projects loaded:', validProjects);
-          setProjects(validProjects);
-          return;
-        }
+      if (!savedProjects || savedProjects === 'null' || savedProjects === 'undefined') {
+        console.log('❌ Nenhum projeto encontrado no localStorage');
+        setProjects([]);
+        setIsLoading(false);
+        return;
       }
+
+      const parsedProjects = JSON.parse(savedProjects);
+      console.log('📋 Projetos parseados:', parsedProjects);
       
-      console.log('No valid projects found in localStorage');
-      setProjects([]);
+      if (!Array.isArray(parsedProjects)) {
+        console.log('❌ Dados não são um array válido');
+        setProjects([]);
+        setIsLoading(false);
+        return;
+      }
+
+      const validProjects = parsedProjects
+        .filter(proj => proj && typeof proj === 'object' && proj.title)
+        .map((proj: any) => ({
+          id: proj.id || Date.now() + Math.random(),
+          title: proj.title || "Projeto sem título",
+          description: proj.description || "Descrição não informada",
+          technologies: Array.isArray(proj.technologies) ? proj.technologies : 
+                       typeof proj.technologies === 'string' ? proj.technologies.split(',').map((t: string) => t.trim()) : [],
+          images: Array.isArray(proj.images) ? proj.images : 
+                 typeof proj.images === 'string' ? [proj.images] : [],
+          links: {
+            demo: proj.links?.demo || proj.demo || '',
+            github: proj.links?.github || proj.github || '',
+            youtube: proj.links?.youtube || proj.youtube || ''
+          },
+          featured: proj.featured !== false
+        }));
+      
+      console.log('✅ Projetos válidos carregados:', validProjects.length, validProjects);
+      setProjects(validProjects);
     } catch (error) {
-      console.error("Erro ao carregar projetos:", error);
+      console.error('❌ Erro ao carregar projetos:', error);
       setProjects([]);
+    } finally {
+      setIsLoading(false);
     }
   };
-  
-  // Sistema de sincronização aprimorado
+
+  // Força recarregamento dos projetos
+  const forceReload = () => {
+    console.log('🔄 Forçando recarregamento...');
+    setTimeout(loadProjects, 100);
+  };
+
   useEffect(() => {
     // Carregamento inicial
     loadProjects();
-    
-    // Listener para mudanças no localStorage (outras abas)
+
+    // Event listeners para sincronização
     const handleStorageChange = (e: StorageEvent) => {
       if (e.key === 'portfolio-projects') {
-        console.log('Storage change detected:', e.newValue);
+        console.log('🔄 Storage change detectado');
         loadProjects();
       }
     };
-    
-    // Listener para evento customizado (mesma aba)
+
     const handleCustomUpdate = () => {
-      console.log('Custom update event detected');
+      console.log('🔄 Custom update detectado');
       loadProjects();
     };
-    
-    // Polling para garantir sincronização
+
+    const handleFocus = () => {
+      console.log('🔄 Foco na janela - recarregando');
+      loadProjects();
+    };
+
+    const handleVisibilityChange = () => {
+      if (!document.hidden) {
+        console.log('🔄 Página visível - recarregando');
+        loadProjects();
+      }
+    };
+
+    // Polling mais agressivo para garantir sincronização
     const pollInterval = setInterval(() => {
       const currentData = localStorage.getItem('portfolio-projects');
       if (currentData) {
         try {
           const currentProjects = JSON.parse(currentData);
           if (JSON.stringify(currentProjects) !== JSON.stringify(projects)) {
-            console.log('Polling detected change');
+            console.log('🔄 Polling detectou mudança');
             loadProjects();
           }
         } catch (error) {
-          console.error('Error parsing during polling:', error);
+          console.error('❌ Erro no polling:', error);
         }
       }
-    }, 1000); // Verificar a cada segundo
-    
-    // Focus event para recarregar quando a aba ganha foco
-    const handleFocus = () => {
-      console.log('Tab focused, reloading projects');
-      loadProjects();
-    };
-    
-    // Visibility change para recarregar quando a página fica visível
-    const handleVisibilityChange = () => {
-      if (!document.hidden) {
-        console.log('Page became visible, reloading projects');
-        loadProjects();
-      }
-    };
-    
+    }, 500); // Verifica a cada 500ms
+
     window.addEventListener('storage', handleStorageChange);
     window.addEventListener('portfolioProjectsUpdated', handleCustomUpdate);
     window.addEventListener('localStorageChange', handleCustomUpdate);
@@ -131,7 +145,7 @@ const Projects: React.FC = () => {
       clearInterval(pollInterval);
     };
   }, []);
-  
+
   useEffect(() => {
     const observer = new IntersectionObserver(
       (entries) => {
@@ -188,7 +202,6 @@ const Projects: React.FC = () => {
   const getYouTubeEmbedUrl = (url: string) => {
     if (!url) return '';
     
-    // Extrair ID do vídeo de diferentes formatos de URL do YouTube
     const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
     const match = url.match(regExp);
     
@@ -198,8 +211,6 @@ const Projects: React.FC = () => {
     
     return url;
   };
-
-  console.log('Rendering Projects with', projects.length, 'projects:', projects);
 
   return (
     <section id="projects" className="relative py-20 bg-[#0c0c0c]" ref={sectionRef}>
@@ -211,7 +222,12 @@ const Projects: React.FC = () => {
           <div className="animate-on-scroll w-20 h-1 bg-highlight-blue mx-auto rounded-full"></div>
         </div>
         
-        {projects.length > 0 ? (
+        {isLoading ? (
+          <div className="text-center text-gray-400">
+            <div className="animate-spin w-8 h-8 border-2 border-highlight-blue border-t-transparent rounded-full mx-auto mb-4"></div>
+            <p>Carregando projetos...</p>
+          </div>
+        ) : projects.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             {projects.filter(project => project.featured).map((project, index) => (
               <div 
@@ -305,15 +321,22 @@ const Projects: React.FC = () => {
             ))}
           </div>
         ) : (
-          <div className="text-center text-gray-400">
-            <p>Nenhum projeto encontrado. Adicione projetos através do painel administrativo.</p>
-            <p className="text-sm mt-2">Debug: Verificando localStorage...</p>
-            <button 
-              onClick={loadProjects}
-              className="mt-4 bg-highlight-blue hover:bg-highlight-blue/80 text-white px-4 py-2 rounded-lg transition-colors"
-            >
-              Recarregar Projetos
-            </button>
+          <div className="text-center text-gray-400 space-y-4">
+            <p className="text-lg">Nenhum projeto encontrado</p>
+            <p className="text-sm">Adicione projetos através do painel administrativo.</p>
+            <div className="space-y-2">
+              <button 
+                onClick={forceReload}
+                className="bg-highlight-blue hover:bg-highlight-blue/80 text-white px-6 py-3 rounded-lg transition-colors font-medium"
+              >
+                🔄 Recarregar Projetos
+              </button>
+              <div className="text-xs text-gray-500">
+                <p>Debug info:</p>
+                <p>localStorage: {localStorage.getItem('portfolio-projects') ? 'Presente' : 'Vazio'}</p>
+                <p>Projetos carregados: {projects.length}</p>
+              </div>
+            </div>
           </div>
         )}
       </div>
