@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -6,6 +7,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
+import { Switch } from '@/components/ui/switch';
 import { Plus, Trash2, Edit, Save, X, RefreshCw } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
@@ -102,7 +104,9 @@ const Admin = () => {
   }, []);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    const { name, value, type, checked } = e.target;
+    const target = e.target as HTMLInputElement;
+    const { name, value, type } = target;
+    const checked = target.checked;
 
     setEditingProject(prev => {
       if (!prev) return prev;
@@ -409,18 +413,19 @@ const Admin = () => {
                   </div>
                   <div>
                     <label className="block text-sm font-medium leading-none mb-1">Destaque</label>
-                    <div className="space-y-2">
-                      <label htmlFor="featured" className="inline-flex items-center space-x-2">
-                        <Input
-                          type="checkbox"
-                          id="featured"
-                          name="featured"
-                          checked={editingProject.featured}
-                          onChange={handleChange}
-                        />
-                        <span className="text-sm font-medium leading-none">
-                          Mostrar na página principal
-                        </span>
+                    <div className="flex items-center space-x-2">
+                      <Switch
+                        id="featured"
+                        checked={editingProject.featured}
+                        onCheckedChange={(checked) => {
+                          setEditingProject(prev => {
+                            if (!prev) return prev;
+                            return { ...prev, featured: checked };
+                          });
+                        }}
+                      />
+                      <label htmlFor="featured" className="text-sm font-medium leading-none">
+                        Mostrar na página principal
                       </label>
                     </div>
                   </div>
