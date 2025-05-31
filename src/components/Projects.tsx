@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useRef } from 'react';
 import { ExternalLink, X, ArrowLeft, Play, Youtube } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -25,20 +26,6 @@ const Projects: React.FC = () => {
   const [projects, setProjects] = useState<Project[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   
-  // Função para adicionar projeto de exemplo se não houver projetos
-  const checkAndAddSampleProject = async () => {
-    const { data, error } = await supabase
-      .from('projects')
-      .select('*')
-      .limit(1);
-
-    if (!error && (!data || data.length === 0)) {
-      console.log('📝 Nenhum projeto encontrado, adicionando WorkflowApp...');
-      await addWorkflowAppProject();
-      await loadProjects();
-    }
-  };
-
   // Função para carregar projetos do Supabase
   const loadProjects = async () => {
     console.log('🔄 Iniciando carregamento de projetos do Supabase...');
@@ -48,7 +35,6 @@ const Projects: React.FC = () => {
       const { data, error } = await supabase
         .from('projects')
         .select('*')
-        .eq('featured', true)
         .order('created_at', { ascending: false });
 
       if (error) {
@@ -91,10 +77,38 @@ const Projects: React.FC = () => {
     }
   };
 
+  // Função para adicionar projeto de exemplo
+  const addSampleProjectIfNeeded = async () => {
+    try {
+      console.log('🔍 Verificando se há projetos na base...');
+      const { data, error } = await supabase
+        .from('projects')
+        .select('*')
+        .limit(1);
+
+      if (error) {
+        console.error('❌ Erro ao verificar projetos:', error);
+        return;
+      }
+
+      if (!data || data.length === 0) {
+        console.log('📝 Nenhum projeto encontrado, adicionando WorkflowApp...');
+        const result = await addWorkflowAppProject();
+        if (result.success) {
+          console.log('✅ Projeto WorkflowApp adicionado com sucesso!');
+        }
+      } else {
+        console.log('✅ Projetos já existem na base:', data.length);
+      }
+    } catch (error) {
+      console.error('❌ Erro ao adicionar projeto exemplo:', error);
+    }
+  };
+
   useEffect(() => {
     // Carregamento inicial
     const initializeProjects = async () => {
-      await checkAndAddSampleProject();
+      await addSampleProjectIfNeeded();
       await loadProjects();
     };
     
@@ -413,7 +427,7 @@ const Projects: React.FC = () => {
             
             <div className="p-6">
               <h3 className="text-2xl font-bold mb-4 text-white">{selectedProject.title}</h3>
-              <p className="text-gray-300 mb-6 leading-relaxed">{selectedProject.description}</p>
+              <p className="text-gray-300 mb-6 leading-relaxed whitespace-pre-line">{selectedProject.description}</p>
               
               <div className="mb-6">
                 <h4 className="font-semibold text-white mb-3">Tecnologias Utilizadas</h4>
