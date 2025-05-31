@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useRef } from 'react';
 import { ExternalLink, X, ArrowLeft, Play, Youtube } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -225,6 +224,12 @@ const Projects: React.FC = () => {
     }
   };
 
+  const handleProjectClick = (project: Project) => {
+    console.log('📱 Projeto clicado:', project);
+    setSelectedProject(project);
+    setShowYouTubeModal(false);
+  };
+
   return (
     <section id="projects" className="relative py-20 bg-[#0a0a0a] min-h-screen" ref={sectionRef}>
       <div className="section-container max-w-7xl mx-auto px-4">
@@ -255,7 +260,7 @@ const Projects: React.FC = () => {
                   "cursor-pointer"
                 )}
                 style={{ animationDelay: `${200 * index}ms` }}
-                onClick={() => setSelectedProject(project)}
+                onClick={() => handleProjectClick(project)}
               >
                 <div className="relative aspect-video overflow-hidden">
                   <img 
@@ -274,7 +279,7 @@ const Projects: React.FC = () => {
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
-                          setSelectedProject(project);
+                          handleProjectClick(project);
                           setShowYouTubeModal(true);
                         }}
                         className="bg-red-600 hover:bg-red-700 text-white p-3 rounded-full transition-all duration-300 shadow-lg hover:shadow-red-500/25"
@@ -345,7 +350,7 @@ const Projects: React.FC = () => {
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
-                          setSelectedProject(project);
+                          handleProjectClick(project);
                           setShowYouTubeModal(true);
                         }}
                         className="flex items-center gap-1 text-gray-400 hover:text-red-400 transition-colors"
