@@ -1,9 +1,9 @@
-
 import React, { useState, useEffect, useRef } from 'react';
 import { ExternalLink, X, ArrowLeft, Play, Youtube } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { supabase } from '@/integrations/supabase/client';
+import { addWorkflowAppProject } from '@/utils/addSampleProject';
 
 interface Project {
   id: string;
@@ -25,6 +25,20 @@ const Projects: React.FC = () => {
   const [projects, setProjects] = useState<Project[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   
+  // Função para adicionar projeto de exemplo se não houver projetos
+  const checkAndAddSampleProject = async () => {
+    const { data, error } = await supabase
+      .from('projects')
+      .select('*')
+      .limit(1);
+
+    if (!error && (!data || data.length === 0)) {
+      console.log('📝 Nenhum projeto encontrado, adicionando WorkflowApp...');
+      await addWorkflowAppProject();
+      await loadProjects();
+    }
+  };
+
   // Função para carregar projetos do Supabase
   const loadProjects = async () => {
     console.log('🔄 Iniciando carregamento de projetos do Supabase...');
@@ -79,7 +93,12 @@ const Projects: React.FC = () => {
 
   useEffect(() => {
     // Carregamento inicial
-    loadProjects();
+    const initializeProjects = async () => {
+      await checkAndAddSampleProject();
+      await loadProjects();
+    };
+    
+    initializeProjects();
 
     // Setup realtime subscription
     const channel = supabase
@@ -172,6 +191,14 @@ const Projects: React.FC = () => {
   const forceReload = () => {
     console.log('🔄 Forçando recarregamento manual...');
     loadProjects();
+  };
+
+  const addSampleProjectManually = async () => {
+    console.log('➕ Adicionando projeto WorkflowApp manualmente...');
+    const result = await addWorkflowAppProject();
+    if (result.success) {
+      await loadProjects();
+    }
   };
 
   return (
@@ -317,6 +344,13 @@ const Projects: React.FC = () => {
             </p>
             
             <div className="space-y-4">
+              <button 
+                onClick={addSampleProjectManually}
+                className="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-lg transition-colors font-medium inline-flex items-center gap-2 mr-4"
+              >
+                ➕ Adicionar WorkflowApp
+              </button>
+              
               <button 
                 onClick={forceReload}
                 className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg transition-colors font-medium inline-flex items-center gap-2"
