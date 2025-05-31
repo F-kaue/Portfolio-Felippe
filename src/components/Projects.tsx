@@ -24,11 +24,13 @@ const Projects: React.FC = () => {
   const isMobile = useIsMobile();
   const [projects, setProjects] = useState<Project[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [hasError, setHasError] = useState(false);
   
   // Função para carregar projetos do Supabase
   const loadProjects = async () => {
-    console.log('🔄 Iniciando carregamento de projetos do Supabase...');
+    console.log('🔄 Carregando projetos...');
     setIsLoading(true);
+    setHasError(false);
     
     try {
       const { data, error } = await supabase
@@ -38,18 +40,30 @@ const Projects: React.FC = () => {
 
       if (error) {
         console.error('❌ Erro ao carregar projetos:', error);
+        setHasError(true);
         setProjects([]);
-        setIsLoading(false);
         return;
       }
 
-      console.log('📦 Raw Supabase data:', data);
+      console.log('📦 Dados do Supabase:', data);
       
-      if (!data || !Array.isArray(data)) {
-        console.log('❌ Dados não são um array válido');
-        setProjects([]);
-        setIsLoading(false);
-        return;
+      if (!data || data.length === 0) {
+        console.log('⚠️ Nenhum projeto encontrado, adicionando WorkflowApp...');
+        await addWorkflowAppProject();
+        // Tentar carregar novamente após adicionar o projeto
+        const { data: newData, error: newError } = await supabase
+          .from('projects')
+          .select('*')
+          .order('created_at', { ascending: false });
+        
+        if (newError) {
+          console.error('❌ Erro ao recarregar projetos:', newError);
+          setHasError(true);
+          setProjects([]);
+          return;
+        }
+        
+        data = newData || [];
       }
 
       // Formatação dos projetos
@@ -57,68 +71,28 @@ const Projects: React.FC = () => {
         id: proj.id,
         title: proj.title || "Projeto sem título",
         description: proj.description || "Descrição não informada",
-        technologies: proj.technologies || [],
-        images: proj.images && proj.images.length > 0 ? proj.images : 
+        technologies: Array.isArray(proj.technologies) ? proj.technologies : [],
+        images: Array.isArray(proj.images) && proj.images.length > 0 ? proj.images : 
                ['https://images.unsplash.com/photo-1555066931-4365d14bab8c?w=600&h=400&fit=crop'],
         demo_link: proj.demo_link,
         github_link: proj.github_link,
         youtube_link: proj.youtube_link,
-        featured: proj.featured
+        featured: proj.featured || false
       }));
       
-      console.log('✅ Projetos formatados:', formattedProjects.length, formattedProjects);
+      console.log('✅ Projetos formatados:', formattedProjects);
       setProjects(formattedProjects);
     } catch (error) {
       console.error('❌ Erro ao processar projetos:', error);
+      setHasError(true);
       setProjects([]);
     } finally {
       setIsLoading(false);
     }
   };
 
-  // Função para garantir que o WorkflowApp existe
-  const ensureWorkflowAppExists = async () => {
-    try {
-      console.log('🔍 Verificando se WorkflowApp existe...');
-      
-      // Primeiro verificar se já existe um projeto com o título WorkflowApp
-      const { data: existingProjects, error: checkError } = await supabase
-        .from('projects')
-        .select('*')
-        .eq('title', 'WorkflowApp');
-
-      if (checkError) {
-        console.error('❌ Erro ao verificar projetos existentes:', checkError);
-        return;
-      }
-
-      if (existingProjects && existingProjects.length > 0) {
-        console.log('✅ WorkflowApp já existe na base');
-        return;
-      }
-
-      // Se não existe, adicionar
-      console.log('📝 Adicionando WorkflowApp ao banco...');
-      const result = await addWorkflowAppProject();
-      
-      if (result.success) {
-        console.log('✅ WorkflowApp adicionado com sucesso!');
-      } else {
-        console.error('❌ Erro ao adicionar WorkflowApp:', result.error);
-      }
-    } catch (error) {
-      console.error('❌ Erro ao garantir que WorkflowApp existe:', error);
-    }
-  };
-
   useEffect(() => {
-    // Carregamento inicial
-    const initializeProjects = async () => {
-      await ensureWorkflowAppExists();
-      await loadProjects();
-    };
-    
-    initializeProjects();
+    loadProjects();
 
     // Setup realtime subscription
     const channel = supabase
@@ -131,7 +105,7 @@ const Projects: React.FC = () => {
           table: 'projects'
         },
         (payload) => {
-          console.log('🔄 Mudança detectada na tabela projects:', payload);
+          console.log('🔄 Mudança detectada:', payload);
           loadProjects();
         }
       )
@@ -208,34 +182,30 @@ const Projects: React.FC = () => {
     return url.includes('embed') ? url : `https://www.youtube.com/embed/${url}`;
   };
 
-  const forceReload = () => {
-    console.log('🔄 Forçando recarregamento manual...');
-    loadProjects();
-  };
-
-  const addWorkflowAppManually = async () => {
-    console.log('➕ Adicionando projeto WorkflowApp manualmente...');
-    const result = await addWorkflowAppProject();
-    if (result.success) {
-      console.log('✅ Projeto adicionado, recarregando lista...');
-      setTimeout(() => {
-        loadProjects();
-      }, 1000);
-    }
-  };
-
   const handleProjectClick = (project: Project) => {
     console.log('📱 Projeto clicado:', project);
-    console.log('🔍 Dados completos do projeto:', JSON.stringify(project, null, 2));
     setSelectedProject(project);
     setShowYouTubeModal(false);
   };
 
   const handleYouTubeClick = (e: React.MouseEvent, project: Project) => {
     e.stopPropagation();
-    console.log('🎥 YouTube clicado para projeto:', project.title);
+    console.log('🎥 YouTube clicado para:', project.title);
     setSelectedProject(project);
     setShowYouTubeModal(true);
+  };
+
+  const addWorkflowAppManually = async () => {
+    console.log('➕ Adicionando WorkflowApp manualmente...');
+    setIsLoading(true);
+    const result = await addWorkflowAppProject();
+    if (result.success) {
+      console.log('✅ Projeto adicionado!');
+      await loadProjects();
+    } else {
+      setHasError(true);
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -253,19 +223,47 @@ const Projects: React.FC = () => {
         
         {isLoading ? (
           <div className="text-center text-gray-400 py-20">
-            <div className="animate-spin w-8 h-8 border-2 border-blue-500 border-t-transparent rounded-full mx-auto mb-4"></div>
-            <p>Carregando projetos...</p>
+            <div className="animate-spin w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full mx-auto mb-6"></div>
+            <p className="text-lg">Carregando projetos...</p>
           </div>
-        ) : projects.length > 0 ? (
+        ) : hasError ? (
+          <div className="text-center text-gray-400 space-y-6 py-20">
+            <div className="text-6xl mb-4">❌</div>
+            <h3 className="text-xl font-semibold text-white">Erro ao carregar projetos</h3>
+            <p className="text-gray-500 max-w-md mx-auto">
+              Houve um problema ao carregar os projetos. Tente novamente.
+            </p>
+            <button 
+              onClick={loadProjects}
+              className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg transition-colors font-medium inline-flex items-center gap-2"
+            >
+              🔄 Tentar Novamente
+            </button>
+          </div>
+        ) : projects.length === 0 ? (
+          <div className="text-center text-gray-400 space-y-6 py-20">
+            <div className="text-6xl mb-4">📁</div>
+            <h3 className="text-xl font-semibold text-white">Nenhum projeto encontrado</h3>
+            <p className="text-gray-500 max-w-md mx-auto">
+              Parece que não há projetos cadastrados ainda. Vamos adicionar o WorkflowApp!
+            </p>
+            <button 
+              onClick={addWorkflowAppManually}
+              className="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-lg transition-colors font-medium inline-flex items-center gap-2"
+            >
+              ➕ Adicionar WorkflowApp
+            </button>
+          </div>
+        ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {projects.map((project, index) => (
               <div 
                 key={project.id}
                 className={cn(
                   "animate-on-scroll relative group rounded-xl overflow-hidden",
-                  "bg-gray-900/80 backdrop-blur-sm border-2 border-gray-700 hover:border-blue-500/50",
-                  "transition-all duration-300 hover:transform hover:scale-105 hover:shadow-xl hover:shadow-blue-500/20",
-                  "cursor-pointer"
+                  "bg-gray-900/90 backdrop-blur-sm border-2 border-gray-700 hover:border-blue-500/70",
+                  "transition-all duration-300 hover:transform hover:scale-105 hover:shadow-xl hover:shadow-blue-500/30",
+                  "cursor-pointer min-h-[400px]"
                 )}
                 style={{ animationDelay: `${200 * index}ms` }}
                 onClick={() => handleProjectClick(project)}
@@ -301,12 +299,12 @@ const Projects: React.FC = () => {
                   </div>
                 </div>
                 
-                <div className="p-6 relative z-10 bg-gray-900/90 backdrop-blur-sm">
+                <div className="p-6 relative z-10 bg-gray-900/95 backdrop-blur-sm">
                   <h3 className="text-xl font-bold mb-3 text-white group-hover:text-blue-400 transition-colors">
                     {project.title}
                   </h3>
                   <p className="text-gray-300 text-sm mb-4 line-clamp-3 leading-relaxed">
-                    {project.description}
+                    {project.description.length > 120 ? `${project.description.substring(0, 120)}...` : project.description}
                   </p>
                   
                   <div className="flex flex-wrap gap-2 mb-4">
@@ -363,30 +361,6 @@ const Projects: React.FC = () => {
                 </div>
               </div>
             ))}
-          </div>
-        ) : (
-          <div className="text-center text-gray-400 space-y-6 py-20">
-            <div className="text-6xl mb-4">📁</div>
-            <h3 className="text-xl font-semibold text-white">Nenhum projeto encontrado</h3>
-            <p className="text-gray-500 max-w-md mx-auto">
-              Parece que não há projetos cadastrados ainda. Vou adicionar o WorkflowApp para você!
-            </p>
-            
-            <div className="space-y-4">
-              <button 
-                onClick={addWorkflowAppManually}
-                className="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-lg transition-colors font-medium inline-flex items-center gap-2 mr-4"
-              >
-                ➕ Adicionar WorkflowApp
-              </button>
-              
-              <button 
-                onClick={forceReload}
-                className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg transition-colors font-medium inline-flex items-center gap-2"
-              >
-                🔄 Recarregar Projetos
-              </button>
-            </div>
           </div>
         )}
       </div>
