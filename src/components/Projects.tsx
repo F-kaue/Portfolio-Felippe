@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useRef } from 'react';
 import { ExternalLink, X, ArrowLeft, Play, Youtube } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -247,13 +248,13 @@ const Projects: React.FC = () => {
             <div className="text-6xl mb-4">📁</div>
             <h3 className="text-xl font-semibold text-white">Nenhum projeto encontrado</h3>
             <p className="text-gray-500 max-w-md mx-auto">
-              Parece que não há projetos cadastrados ainda. Vamos adicionar o WorkflowApp!
+              Parece que não há projetos cadastrados ainda. Vamos adicionar um projeto de exemplo!
             </p>
             <button 
               onClick={addWorkflowAppManually}
               className="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-lg transition-colors font-medium inline-flex items-center gap-2"
             >
-              ➕ Adicionar WorkflowApp
+              ➕ Adicionar Projeto de Exemplo
             </button>
           </div>
         ) : (
@@ -261,18 +262,13 @@ const Projects: React.FC = () => {
             {projects.map((project, index) => (
               <div 
                 key={project.id}
-                className={cn(
-                  "animate-on-scroll relative group rounded-xl overflow-hidden",
-                  "bg-gray-900/90 backdrop-blur-sm border-2 border-gray-700 hover:border-blue-500/70",
-                  "transition-all duration-300 hover:transform hover:scale-105 hover:shadow-xl hover:shadow-blue-500/30",
-                  "cursor-pointer min-h-[400px]"
-                )}
+                className="group relative bg-gray-900 border border-gray-700 rounded-xl overflow-hidden hover:border-blue-500 transition-all duration-300 hover:transform hover:scale-105 cursor-pointer shadow-lg hover:shadow-blue-500/25"
                 style={{ animationDelay: `${200 * index}ms` }}
                 onClick={() => handleProjectClick(project)}
               >
                 <div className="relative aspect-video overflow-hidden bg-gray-800">
                   <img 
-                    src={project.images && project.images.length > 0 ? project.images[0] : 'https://images.unsplash.com/photo-1555066931-4365d14bab8c?w=600&h=400&fit=crop'} 
+                    src={project.images[0]} 
                     alt={project.title} 
                     className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
                     onError={(e) => {
@@ -280,16 +276,16 @@ const Projects: React.FC = () => {
                       target.src = 'https://images.unsplash.com/photo-1555066931-4365d14bab8c?w=600&h=400&fit=crop';
                     }}
                   />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent"></div>
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent"></div>
                   
                   {project.youtube_link && (
                     <div className="absolute top-4 right-4">
                       <button
                         onClick={(e) => handleYouTubeClick(e, project)}
-                        className="bg-red-600 hover:bg-red-700 text-white p-3 rounded-full transition-all duration-300 shadow-lg hover:shadow-red-500/25"
+                        className="bg-red-600 hover:bg-red-700 text-white p-2 rounded-full transition-all duration-300 shadow-lg"
                         title="Assistir vídeo do projeto"
                       >
-                        <Youtube className="w-5 h-5" />
+                        <Youtube className="w-4 h-4" />
                       </button>
                     </div>
                   )}
@@ -301,11 +297,11 @@ const Projects: React.FC = () => {
                   </div>
                 </div>
                 
-                <div className="p-6 relative z-10 bg-gray-900/95 backdrop-blur-sm">
+                <div className="p-6">
                   <h3 className="text-xl font-bold mb-3 text-white group-hover:text-blue-400 transition-colors">
                     {project.title}
                   </h3>
-                  <p className="text-gray-300 text-sm mb-4 line-clamp-3 leading-relaxed">
+                  <p className="text-gray-300 text-sm mb-4 line-clamp-3">
                     {project.description.length > 120 ? `${project.description.substring(0, 120)}...` : project.description}
                   </p>
                   
@@ -313,7 +309,7 @@ const Projects: React.FC = () => {
                     {project.technologies.slice(0, 3).map((tech, i) => (
                       <span 
                         key={i} 
-                        className="bg-blue-600/20 border border-blue-500/40 text-blue-300 text-xs px-3 py-1 rounded-full hover:bg-blue-600/30 transition-colors"
+                        className="bg-blue-600/20 border border-blue-500/40 text-blue-300 text-xs px-3 py-1 rounded-full"
                       >
                         {tech}
                       </span>
@@ -350,15 +346,6 @@ const Projects: React.FC = () => {
                         <span>Código</span>
                       </a>
                     )}
-                    {project.youtube_link && (
-                      <button
-                        onClick={(e) => handleYouTubeClick(e, project)}
-                        className="flex items-center gap-1 text-gray-400 hover:text-red-400 transition-colors"
-                      >
-                        <Youtube className="w-4 h-4" />
-                        <span>Vídeo</span>
-                      </button>
-                    )}
                   </div>
                 </div>
               </div>
@@ -369,16 +356,9 @@ const Projects: React.FC = () => {
       
       {/* Modal de detalhes do projeto */}
       {selectedProject && !showYouTubeModal && (
-        <div 
-          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/90 backdrop-blur-sm"
-          onClick={() => setSelectedProject(null)}
-        >
-          <div 
-            className="relative bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl w-full max-h-[90vh] overflow-auto animate-fade-in shadow-2xl"
-            style={{ maxWidth: isMobile ? '100%' : '900px' }}
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="sticky top-0 z-10 flex justify-between items-center p-6 bg-white/95 dark:bg-gray-900/95 backdrop-blur-sm border-b border-gray-200 dark:border-gray-700">
+        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-white dark:bg-gray-900 rounded-lg shadow-xl max-w-4xl w-full max-h-[90vh] overflow-auto">
+            <div className="flex justify-between items-center p-6 border-b border-gray-200 dark:border-gray-700">
               <button 
                 className="flex items-center gap-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors"
                 onClick={() => setSelectedProject(null)}
@@ -409,9 +389,9 @@ const Projects: React.FC = () => {
               </div>
             )}
             
-            <div className="p-6 bg-white dark:bg-gray-900">
+            <div className="p-6">
               <h3 className="text-3xl font-bold mb-4 text-gray-900 dark:text-white">{selectedProject.title}</h3>
-              <p className="text-gray-700 dark:text-gray-300 mb-6 leading-relaxed whitespace-pre-line text-base">
+              <p className="text-gray-700 dark:text-gray-300 mb-6 leading-relaxed text-base">
                 {selectedProject.description}
               </p>
               
@@ -433,7 +413,7 @@ const Projects: React.FC = () => {
                 {selectedProject.demo_link && (
                   <a 
                     href={selectedProject.demo_link}
-                    className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg transition-colors font-medium shadow-lg hover:shadow-blue-500/25"
+                    className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg transition-colors font-medium shadow-lg"
                     target="_blank"
                     rel="noopener noreferrer"
                   >
@@ -457,7 +437,7 @@ const Projects: React.FC = () => {
                 {selectedProject.youtube_link && (
                   <button
                     onClick={() => setShowYouTubeModal(true)}
-                    className="inline-flex items-center gap-2 bg-red-600 hover:bg-red-700 text-white px-6 py-3 rounded-lg transition-colors font-medium shadow-lg hover:shadow-red-500/25"
+                    className="inline-flex items-center gap-2 bg-red-600 hover:bg-red-700 text-white px-6 py-3 rounded-lg transition-colors font-medium shadow-lg"
                   >
                     <Youtube className="w-5 h-5" />
                     <span>Assistir Vídeo</span>
@@ -471,16 +451,9 @@ const Projects: React.FC = () => {
       
       {/* Modal do YouTube */}
       {showYouTubeModal && selectedProject?.youtube_link && (
-        <div 
-          className="fixed inset-0 z-60 flex items-center justify-center p-4 bg-black/95 backdrop-blur-sm"
-          onClick={() => setShowYouTubeModal(false)}
-        >
-          <div 
-            className="relative bg-black rounded-xl w-full max-h-[90vh] overflow-hidden animate-fade-in shadow-2xl border border-gray-800"
-            style={{ maxWidth: isMobile ? '100%' : '1000px' }}
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="flex justify-between items-center p-4 bg-gray-900/95 backdrop-blur-sm border-b border-gray-700">
+        <div className="fixed inset-0 z-60 bg-black/95 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-black rounded-xl w-full max-w-4xl max-h-[90vh] overflow-hidden shadow-2xl border border-gray-800">
+            <div className="flex justify-between items-center p-4 bg-gray-900 border-b border-gray-700">
               <h3 className="text-white font-semibold text-lg">{selectedProject.title} - Demonstração</h3>
               <button 
                 className="bg-gray-800 hover:bg-gray-700 rounded-full p-2 transition-colors"
@@ -499,12 +472,6 @@ const Projects: React.FC = () => {
                 allowFullScreen
                 style={{ border: 'none' }}
               />
-            </div>
-            
-            <div className="p-4 bg-gray-900 border-t border-gray-700">
-              <p className="text-gray-300 text-sm text-center">
-                Pressione ESC para fechar ou clique fora do vídeo
-              </p>
             </div>
           </div>
         </div>
