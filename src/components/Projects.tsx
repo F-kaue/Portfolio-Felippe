@@ -47,7 +47,9 @@ const Projects: React.FC = () => {
 
       console.log('📦 Dados do Supabase:', data);
       
-      if (!data || data.length === 0) {
+      let projectsData = data;
+      
+      if (!projectsData || projectsData.length === 0) {
         console.log('⚠️ Nenhum projeto encontrado, adicionando WorkflowApp...');
         await addWorkflowAppProject();
         // Tentar carregar novamente após adicionar o projeto
@@ -63,11 +65,11 @@ const Projects: React.FC = () => {
           return;
         }
         
-        data = newData || [];
+        projectsData = newData || [];
       }
 
       // Formatação dos projetos
-      const formattedProjects = data.map((proj: any) => ({
+      const formattedProjects = projectsData.map((proj: any) => ({
         id: proj.id,
         title: proj.title || "Projeto sem título",
         description: proj.description || "Descrição não informada",
