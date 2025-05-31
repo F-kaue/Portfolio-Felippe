@@ -3,6 +3,23 @@ import { supabase } from '@/integrations/supabase/client';
 
 export const addWorkflowAppProject = async () => {
   try {
+    // Primeiro verificar se já existe
+    const { data: existing, error: checkError } = await supabase
+      .from('projects')
+      .select('*')
+      .eq('title', 'WorkflowApp')
+      .limit(1);
+
+    if (checkError) {
+      console.error('❌ Erro ao verificar projetos existentes:', checkError);
+      return { success: false, error: checkError };
+    }
+
+    if (existing && existing.length > 0) {
+      console.log('✅ WorkflowApp já existe no banco');
+      return { success: true, data: existing[0] };
+    }
+
     const projectData = {
       title: 'WorkflowApp',
       description: 'O WorkflowApp é uma aplicação desenvolvida para facilitar e automatizar o fluxo de trabalho dentro de equipes ou empresas. O sistema permite o cadastro de tarefas, distribuição entre colaboradores, acompanhamento do progresso, notificações de prazos e gestão visual de processos. Ideal para pequenos negócios, times de tecnologia, ou setores operacionais que precisam de organização e agilidade.\n\nO app foi desenvolvido com foco em usabilidade, responsividade e automação de processos, permitindo inclusive a integração com APIs externas no futuro.\n\nFuncionalidades principais:\n• Cadastro e gerenciamento de tarefas\n• Design responsivo para mobile e desktop\n• Registro de atividades por usuário\n• Notificações de status e prazos\n• Interface limpa e intuitiva',
@@ -15,6 +32,7 @@ export const addWorkflowAppProject = async () => {
     };
 
     console.log('🚀 Inserindo projeto WorkflowApp...');
+    console.log('📋 Dados do projeto:', projectData);
     
     const { data, error } = await supabase
       .from('projects')

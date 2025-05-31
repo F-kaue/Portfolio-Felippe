@@ -77,38 +77,45 @@ const Projects: React.FC = () => {
     }
   };
 
-  // Função para adicionar projeto de exemplo
-  const addSampleProjectIfNeeded = async () => {
+  // Função para garantir que o WorkflowApp existe
+  const ensureWorkflowAppExists = async () => {
     try {
-      console.log('🔍 Verificando se há projetos na base...');
-      const { data, error } = await supabase
+      console.log('🔍 Verificando se WorkflowApp existe...');
+      
+      // Primeiro verificar se já existe um projeto com o título WorkflowApp
+      const { data: existingProjects, error: checkError } = await supabase
         .from('projects')
         .select('*')
-        .limit(1);
+        .eq('title', 'WorkflowApp');
 
-      if (error) {
-        console.error('❌ Erro ao verificar projetos:', error);
+      if (checkError) {
+        console.error('❌ Erro ao verificar projetos existentes:', checkError);
         return;
       }
 
-      if (!data || data.length === 0) {
-        console.log('📝 Nenhum projeto encontrado, adicionando WorkflowApp...');
-        const result = await addWorkflowAppProject();
-        if (result.success) {
-          console.log('✅ Projeto WorkflowApp adicionado com sucesso!');
-        }
+      if (existingProjects && existingProjects.length > 0) {
+        console.log('✅ WorkflowApp já existe na base');
+        return;
+      }
+
+      // Se não existe, adicionar
+      console.log('📝 Adicionando WorkflowApp ao banco...');
+      const result = await addWorkflowAppProject();
+      
+      if (result.success) {
+        console.log('✅ WorkflowApp adicionado com sucesso!');
       } else {
-        console.log('✅ Projetos já existem na base:', data.length);
+        console.error('❌ Erro ao adicionar WorkflowApp:', result.error);
       }
     } catch (error) {
-      console.error('❌ Erro ao adicionar projeto exemplo:', error);
+      console.error('❌ Erro ao garantir que WorkflowApp existe:', error);
     }
   };
 
   useEffect(() => {
     // Carregamento inicial
     const initializeProjects = async () => {
-      await addSampleProjectIfNeeded();
+      await ensureWorkflowAppExists();
       await loadProjects();
     };
     
@@ -207,11 +214,14 @@ const Projects: React.FC = () => {
     loadProjects();
   };
 
-  const addSampleProjectManually = async () => {
+  const addWorkflowAppManually = async () => {
     console.log('➕ Adicionando projeto WorkflowApp manualmente...');
     const result = await addWorkflowAppProject();
     if (result.success) {
-      await loadProjects();
+      console.log('✅ Projeto adicionado, recarregando lista...');
+      setTimeout(() => {
+        loadProjects();
+      }, 1000);
     }
   };
 
@@ -354,12 +364,12 @@ const Projects: React.FC = () => {
             <div className="text-6xl mb-4">📁</div>
             <h3 className="text-xl font-semibold text-white">Nenhum projeto encontrado</h3>
             <p className="text-gray-500 max-w-md mx-auto">
-              Parece que não há projetos cadastrados ainda. Adicione alguns projetos através do painel administrativo.
+              Parece que não há projetos cadastrados ainda. Vou adicionar o WorkflowApp para você!
             </p>
             
             <div className="space-y-4">
               <button 
-                onClick={addSampleProjectManually}
+                onClick={addWorkflowAppManually}
                 className="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-lg transition-colors font-medium inline-flex items-center gap-2 mr-4"
               >
                 ➕ Adicionar WorkflowApp
