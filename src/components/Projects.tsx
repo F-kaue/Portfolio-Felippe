@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useRef } from 'react';
 import { ExternalLink, X, ArrowLeft, Play, Youtube } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -17,6 +16,9 @@ interface Project {
   youtube_link?: string;
   featured: boolean;
 }
+
+// Imagem padrão para projetos
+const DEFAULT_PROJECT_IMAGE = 'https://images.unsplash.com/photo-1461749280684-dccba630e2f6?w=600&h=400&fit=crop&crop=center';
 
 const Projects: React.FC = () => {
   const sectionRef = useRef<HTMLDivElement>(null);
@@ -69,14 +71,13 @@ const Projects: React.FC = () => {
         projectsData = newData || [];
       }
 
-      // Formatação dos projetos
+      // Formatação dos projetos com imagem padrão
       const formattedProjects = projectsData.map((proj: any) => ({
         id: proj.id,
         title: proj.title || "Projeto sem título",
         description: proj.description || "Descrição não informada",
         technologies: Array.isArray(proj.technologies) ? proj.technologies : [],
-        images: Array.isArray(proj.images) && proj.images.length > 0 ? proj.images : 
-               ['https://images.unsplash.com/photo-1555066931-4365d14bab8c?w=600&h=400&fit=crop'],
+        images: Array.isArray(proj.images) && proj.images.length > 0 ? proj.images : [DEFAULT_PROJECT_IMAGE],
         demo_link: proj.demo_link,
         github_link: proj.github_link,
         youtube_link: proj.youtube_link,
@@ -273,7 +274,7 @@ const Projects: React.FC = () => {
                     className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
                     onError={(e) => {
                       const target = e.target as HTMLImageElement;
-                      target.src = 'https://images.unsplash.com/photo-1555066931-4365d14bab8c?w=600&h=400&fit=crop';
+                      target.src = DEFAULT_PROJECT_IMAGE;
                     }}
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent"></div>
@@ -383,7 +384,7 @@ const Projects: React.FC = () => {
                   className="w-full h-full object-cover"
                   onError={(e) => {
                     const target = e.target as HTMLImageElement;
-                    target.src = 'https://images.unsplash.com/photo-1555066931-4365d14bab8c?w=600&h=400&fit=crop';
+                    target.src = DEFAULT_PROJECT_IMAGE;
                   }}
                 />
               </div>
