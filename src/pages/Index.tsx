@@ -8,10 +8,10 @@ import Projects from '@/components/Projects';
 import Experience from '@/components/Experience';
 import Contact from '@/components/Contact';
 import Footer from '@/components/Footer';
-import ParticleBackground from '@/components/ParticleBackground';
+import NetworkBackground from '@/components/NetworkBackground';
+import ParticleField from '@/components/ParticleField';
 import SnakeAnimation from '@/components/SnakeAnimation';
 import FloatingElements from '@/components/FloatingElements';
-import AnimatedBackground from '@/components/AnimatedBackground';
 
 const Index = () => {
   useEffect(() => {
@@ -42,8 +42,8 @@ const Index = () => {
   
   return (
     <div className="min-h-screen relative overflow-hidden bg-background">
-      <AnimatedBackground />
-      <ParticleBackground />
+      <NetworkBackground />
+      <ParticleField />
       <FloatingElements />
       <SnakeAnimation />
       <Navbar />
