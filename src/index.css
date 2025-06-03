@@ -1,4 +1,5 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@400;500;600;700&family=Press+Start+2P&display=swap');
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@400;500;600;700&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -209,23 +210,5 @@
     to {
       background-position: 200% 0;
     }
-  }
-  
-  .retro-font {
-    font-family: "Press Start 2P", monospace;
-  }
-  
-  .pixel-perfect {
-    image-rendering: pixelated;
-    image-rendering: -moz-crisp-edges;
-    image-rendering: crisp-edges;
-  }
-  
-  .game-inventory {
-    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f172a 100%);
-    border: 4px solid #0c7cff;
-    box-shadow: 
-      inset 0 0 20px rgba(12, 124, 255, 0.1),
-      0 0 30px rgba(12, 124, 255, 0.3);
   }
 }
