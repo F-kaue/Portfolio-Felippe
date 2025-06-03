@@ -9,6 +9,8 @@ import Experience from '@/components/Experience';
 import Contact from '@/components/Contact';
 import Footer from '@/components/Footer';
 import ParticleBackground from '@/components/ParticleBackground';
+import SnakeAnimation from '@/components/SnakeAnimation';
+import FloatingElements from '@/components/FloatingElements';
 
 const Index = () => {
   useEffect(() => {
@@ -40,6 +42,8 @@ const Index = () => {
   return (
     <div className="min-h-screen relative overflow-hidden bg-background">
       <ParticleBackground />
+      <FloatingElements />
+      <SnakeAnimation />
       <Navbar />
       <main>
         <Hero />
