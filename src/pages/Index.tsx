@@ -11,6 +11,7 @@ import Footer from '@/components/Footer';
 import ParticleBackground from '@/components/ParticleBackground';
 import SnakeAnimation from '@/components/SnakeAnimation';
 import FloatingElements from '@/components/FloatingElements';
+import AnimatedBackground from '@/components/AnimatedBackground';
 
 const Index = () => {
   useEffect(() => {
@@ -41,6 +42,7 @@ const Index = () => {
   
   return (
     <div className="min-h-screen relative overflow-hidden bg-background">
+      <AnimatedBackground />
       <ParticleBackground />
       <FloatingElements />
       <SnakeAnimation />
