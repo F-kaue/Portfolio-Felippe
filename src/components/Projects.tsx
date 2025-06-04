@@ -3,7 +3,8 @@ import { ExternalLink, X, ArrowLeft, Play, Youtube } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { supabase } from '@/integrations/supabase/client';
-import { addWorkflowAppProject, addInsightFlowProject } from '@/utils/addSampleProject';
+import { addWorkflowAppProject } from '@/utils/addSampleProject';
+import { addInsightFlowProject } from '@/utils/addInsightFlowProject';
 
 interface Project {
   id: string;
