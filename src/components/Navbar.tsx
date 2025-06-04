@@ -1,7 +1,8 @@
 
 import React, { useState, useEffect } from 'react';
-import { Menu, X } from 'lucide-react';
+import { Menu, X, User, Shield } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { Link } from 'react-router-dom';
 
 const Navbar: React.FC = () => {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -45,7 +46,7 @@ const Navbar: React.FC = () => {
           </a>
           
           {/* Desktop Navigation */}
-          <div className="hidden md:flex space-x-8">
+          <div className="hidden md:flex items-center space-x-8">
             {navLinks.map((link) => (
               <a
                 key={link.name}
@@ -55,6 +56,24 @@ const Navbar: React.FC = () => {
                 {link.name}
               </a>
             ))}
+            
+            {/* Login and Admin Links */}
+            <div className="flex items-center space-x-4 ml-6 pl-6 border-l border-white/20">
+              <Link
+                to="/login"
+                className="flex items-center space-x-2 text-sm font-medium text-gray-300 hover:text-white transition-colors duration-200"
+              >
+                <User size={16} />
+                <span>Login</span>
+              </Link>
+              <Link
+                to="/admin"
+                className="flex items-center space-x-2 text-sm font-medium text-gray-300 hover:text-white transition-colors duration-200"
+              >
+                <Shield size={16} />
+                <span>Admin</span>
+              </Link>
+            </div>
           </div>
           
           {/* Mobile Navigation Toggle */}
@@ -83,6 +102,26 @@ const Navbar: React.FC = () => {
                 {link.name}
               </a>
             ))}
+            
+            {/* Mobile Login and Admin Links */}
+            <div className="pt-4 border-t border-white/20 space-y-4">
+              <Link
+                to="/login"
+                className="flex items-center space-x-2 text-base font-medium text-gray-300 hover:text-white transition-colors duration-200"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                <User size={16} />
+                <span>Login</span>
+              </Link>
+              <Link
+                to="/admin"
+                className="flex items-center space-x-2 text-base font-medium text-gray-300 hover:text-white transition-colors duration-200"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                <Shield size={16} />
+                <span>Admin</span>
+              </Link>
+            </div>
           </div>
         </div>
       )}
