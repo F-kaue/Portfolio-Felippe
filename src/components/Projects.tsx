@@ -3,7 +3,7 @@ import { ExternalLink, X, ArrowLeft, Play, Youtube } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { supabase } from '@/integrations/supabase/client';
-import { addWorkflowAppProject } from '@/utils/addSampleProject';
+import { addWorkflowAppProject, addInsightFlowProject } from '@/utils/addSampleProject';
 
 interface Project {
   id: string;
@@ -212,6 +212,19 @@ const Projects: React.FC = () => {
     }
   };
 
+  const addInsightFlowManually = async () => {
+    console.log('➕ Adicionando Insight Flow manualmente...');
+    setIsLoading(true);
+    const result = await addInsightFlowProject();
+    if (result.success) {
+      console.log('✅ Projeto Insight Flow adicionado!');
+      await loadProjects();
+    } else {
+      setHasError(true);
+      setIsLoading(false);
+    }
+  };
+
   return (
     <section id="projects" className="relative py-20 bg-[#0a0a0a] min-h-screen" ref={sectionRef}>
       <div className="section-container max-w-7xl mx-auto px-4">
@@ -249,14 +262,22 @@ const Projects: React.FC = () => {
             <div className="text-6xl mb-4">📁</div>
             <h3 className="text-xl font-semibold text-white">Nenhum projeto encontrado</h3>
             <p className="text-gray-500 max-w-md mx-auto">
-              Parece que não há projetos cadastrados ainda. Vamos adicionar um projeto de exemplo!
+              Parece que não há projetos cadastrados ainda. Vamos adicionar alguns projetos de exemplo!
             </p>
-            <button 
-              onClick={addWorkflowAppManually}
-              className="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-lg transition-colors font-medium inline-flex items-center gap-2"
-            >
-              ➕ Adicionar Projeto de Exemplo
-            </button>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <button 
+                onClick={addWorkflowAppManually}
+                className="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-lg transition-colors font-medium inline-flex items-center gap-2"
+              >
+                ➕ Adicionar WorkflowApp
+              </button>
+              <button 
+                onClick={addInsightFlowManually}
+                className="bg-purple-600 hover:bg-purple-700 text-white px-6 py-3 rounded-lg transition-colors font-medium inline-flex items-center gap-2"
+              >
+                ➕ Adicionar Insight Flow
+              </button>
+            </div>
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
