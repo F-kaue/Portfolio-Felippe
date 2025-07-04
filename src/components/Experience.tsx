@@ -1,9 +1,12 @@
+
 import React, { useEffect, useRef, useState } from 'react';
 import { Calendar, Briefcase, Headset, FileText, Computer } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { supabase } from '@/integrations/supabase/client';
+import { useQuery } from '@tanstack/react-query';
 
 interface TimelineItem {
-  id: number;
+  id: string;
   title: string;
   company: string;
   period: string;
@@ -14,80 +17,40 @@ interface TimelineItem {
 
 const Experience: React.FC = () => {
   const sectionRef = useRef<HTMLDivElement>(null);
-  const [experiences, setExperiences] = useState<TimelineItem[]>([]);
   
-  useEffect(() => {
-    const loadExperiences = () => {
-      const savedExperiences = localStorage.getItem('portfolio-experiences');
+  const { data: experiences = [], isLoading } = useQuery({
+    queryKey: ['experiences'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('experiences')
+        .select('*')
+        .order('display_order', { ascending: true });
       
-      if (savedExperiences) {
-        try {
-          const adminExperiences = JSON.parse(savedExperiences);
-          
-          if (Array.isArray(adminExperiences) && adminExperiences.length > 0) {
-            const convertedExperiences = adminExperiences.map((exp: any) => {
-              // Converter descrição de string para array se necessário
-              let description = exp.description;
-              if (typeof description === 'string') {
-                description = description.split('\n').filter((item: string) => item.trim() !== '');
-              }
-              
-              return {
-                id: exp.id || Date.now() + Math.random(),
-                title: exp.title || "Cargo não informado",
-                company: exp.company || "Empresa não informada",
-                period: exp.period || "Período não informado",
-                description: Array.isArray(description) ? description : [description || "Descrição não informada"],
-                type: 'work' as const,
-                icon: getIconForTitle(exp.title || "")
-              };
-            });
-            
-            setExperiences(convertedExperiences);
-          } else {
-            setExperiences([]);
-          }
-        } catch (error) {
-          console.error("Erro ao carregar experiências:", error);
-          setExperiences([]);
-        }
-      } else {
-        setExperiences([]);
+      if (error) {
+        console.error('Erro ao carregar experiências:', error);
+        throw error;
       }
-    };
-    
-    // Carregar experiências inicialmente
-    loadExperiences();
-    
-    // Escutar mudanças no localStorage
-    const handleStorageChange = (e: StorageEvent) => {
-      if (e.key === 'portfolio-experiences') {
-        loadExperiences();
-      }
-    };
-    
-    // Escutar mudanças customizadas no localStorage
-    const handleCustomStorageChange = () => {
-      loadExperiences();
-    };
-    
-    window.addEventListener('storage', handleStorageChange);
-    window.addEventListener('portfolioExperiencesUpdated', handleCustomStorageChange);
-    
-    return () => {
-      window.removeEventListener('storage', handleStorageChange);
-      window.removeEventListener('portfolioExperiencesUpdated', handleCustomStorageChange);
-    };
-  }, []);
+      
+      return data?.map((exp) => ({
+        id: exp.id,
+        title: exp.title,
+        company: exp.company,
+        period: exp.period,
+        description: exp.description,
+        type: 'work' as const,
+        icon: getIconForTitle(exp.icon_type || exp.title)
+      })) || [];
+    }
+  });
   
-  const getIconForTitle = (title: string): React.ComponentType<any> => {
-    const lowerTitle = title.toLowerCase();
+  const getIconForTitle = (iconType: string): React.ComponentType<any> => {
+    const lowerIconType = iconType.toLowerCase();
     
-    if (lowerTitle.includes('suporte') || lowerTitle.includes('atendimento')) {
+    if (lowerIconType.includes('headset') || lowerIconType.includes('suporte') || lowerIconType.includes('atendimento')) {
       return Headset;
-    } else if (lowerTitle.includes('técnico') || lowerTitle.includes('tecnico') || lowerTitle.includes('informática')) {
+    } else if (lowerIconType.includes('computer') || lowerIconType.includes('técnico') || lowerIconType.includes('tecnico') || lowerIconType.includes('informática')) {
       return Computer;
-    } else if (lowerTitle.includes('faturista') || lowerTitle.includes('fiscal') || lowerTitle.includes('financeiro')) {
+    } else if (lowerIconType.includes('file-text') || lowerIconType.includes('faturista') || lowerIconType.includes('fiscal') || lowerIconType.includes('financeiro')) {
       return FileText;
     } else {
       return Briefcase;
@@ -118,7 +81,7 @@ const Experience: React.FC = () => {
     };
   }, [experiences]);
 
-  console.log('Experiências carregadas:', experiences);
+  console.log('Experiências carregadas do Supabase:', experiences);
 
   return (
     <section id="experience" className="relative py-20 bg-background" ref={sectionRef}>
@@ -130,7 +93,11 @@ const Experience: React.FC = () => {
           <div className="animate-on-scroll w-20 h-1 bg-highlight-green mx-auto rounded-full"></div>
         </div>
         
-        {experiences.length > 0 ? (
+        {isLoading ? (
+          <div className="text-center text-gray-400">
+            <p>Carregando experiências...</p>
+          </div>
+        ) : experiences.length > 0 ? (
           <div className="relative max-w-4xl mx-auto">
             {/* Timeline center line */}
             <div className="absolute left-4 lg:left-1/2 top-0 bottom-0 w-0.5 bg-white/10 -ml-0.5"></div>
@@ -188,7 +155,7 @@ const Experience: React.FC = () => {
           </div>
         ) : (
           <div className="text-center text-gray-400">
-            <p>Nenhuma experiência encontrada. Adicione experiências através do painel administrativo.</p>
+            <p>Nenhuma experiência encontrada.</p>
           </div>
         )}
       </div>
