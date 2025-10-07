@@ -29,10 +29,10 @@ const Contact: React.FC = () => {
       <div className="section-container">
         <div className="text-center mb-16">
           <h2 className="animate-on-scroll text-3xl md:text-4xl font-bold mb-4 gradient-text">
-            Entre em Contato
+            Vamos conversar sobre o seu projeto?
           </h2>
           <p className="animate-on-scroll delay-200 text-gray-400 max-w-2xl mx-auto">
-            Vamos conversar sobre seu próximo projeto? Estou sempre aberto a novas oportunidades e colaborações.
+            Solicite um <strong className="text-white">orçamento gratuito</strong> e descubra como posso ajudar sua empresa a crescer com soluções web personalizadas e eficientes.
           </p>
         </div>
         
@@ -48,8 +48,8 @@ const Contact: React.FC = () => {
                 </div>
                 <div>
                   <p className="text-gray-400">Email</p>
-                  <a href="mailto:contato@felippegomes.dev" className="text-white hover:text-highlight-blue transition-colors">
-                    contato@felippegomes.dev
+                  <a href="mailto:f_kaue@hotmail.com" className="text-white hover:text-highlight-blue transition-colors">
+                    f_kaue@hotmail.com
                   </a>
                 </div>
               </div>
@@ -60,8 +60,8 @@ const Contact: React.FC = () => {
                 </div>
                 <div>
                   <p className="text-gray-400">Telefone</p>
-                  <a href="tel:+5511999999999" className="text-white hover:text-highlight-green transition-colors">
-                    +55 (11) 99999-9999
+                  <a href="tel:+5585992884178" className="text-white hover:text-highlight-green transition-colors">
+                    +55 (85) 99288-4178
                   </a>
                 </div>
               </div>
@@ -72,7 +72,7 @@ const Contact: React.FC = () => {
                 </div>
                 <div>
                   <p className="text-gray-400">Localização</p>
-                  <p className="text-white">São Paulo, Brasil</p>
+                  <p className="text-white">Fortaleza, Ceará</p>
                 </div>
               </div>
             </div>
@@ -165,8 +165,21 @@ const Contact: React.FC = () => {
                 )}
               >
                 <Send className="w-4 h-4" />
-                <span>Enviar Mensagem</span>
+                <span>Solicitar Orçamento Gratuito</span>
               </button>
+              
+              <div className="text-center mt-4">
+                <p className="text-sm text-gray-500 mb-3">Ou entre em contato diretamente:</p>
+                <a 
+                  href="https://wa.me/5585992884178?text=Olá! Gostaria de solicitar um orçamento para desenvolvimento web."
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-lg font-medium transition-all duration-300 shadow-lg"
+                >
+                  <Phone className="w-4 h-4" />
+                  <span>WhatsApp</span>
+                </a>
+              </div>
             </form>
           </div>
         </div>

@@ -292,8 +292,9 @@ const Projects: React.FC = () => {
                 <div className="relative aspect-video overflow-hidden bg-gray-800">
                   <img 
                     src={project.images[0]} 
-                    alt={project.title} 
+                    alt={`Projeto ${project.title} desenvolvido por Felippe Kauê - ${project.description.substring(0, 100)}...`}
                     className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                    loading="lazy"
                     onError={(e) => {
                       const target = e.target as HTMLImageElement;
                       target.src = DEFAULT_PROJECT_IMAGE;
@@ -402,8 +403,9 @@ const Projects: React.FC = () => {
               <div className="aspect-video w-full max-h-[400px] overflow-hidden bg-gray-100 dark:bg-gray-800">
                 <img 
                   src={selectedProject.images[0]} 
-                  alt={selectedProject.title} 
+                  alt={`Screenshot do projeto ${selectedProject.title} desenvolvido por Felippe Kauê`}
                   className="w-full h-full object-cover"
+                  loading="lazy"
                   onError={(e) => {
                     const target = e.target as HTMLImageElement;
                     target.src = DEFAULT_PROJECT_IMAGE;

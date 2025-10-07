@@ -1,5 +1,5 @@
 
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@400;500;600;700&display=swap&text=ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789');
 
 @tailwind base;
 @tailwind components;
@@ -38,10 +38,45 @@
   
   body {
     @apply bg-background text-foreground antialiased;
+    font-display: swap;
   }
 
   h1, h2, h3, h4, h5, h6 {
     @apply font-heading font-bold;
+  }
+
+  /* Performance optimizations */
+  img {
+    content-visibility: auto;
+  }
+
+  .animate-on-scroll {
+    content-visibility: auto;
+  }
+
+  /* Accessibility improvements */
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+
+  /* Focus styles for better accessibility */
+  *:focus-visible {
+    outline: 2px solid #0ea5e9;
+    outline-offset: 2px;
+  }
+
+  /* Mobile-first responsive improvements */
+  @media (max-width: 640px) {
+    .section-container {
+      @apply px-3 py-8;
+    }
   }
 }
 
@@ -51,7 +86,7 @@
   }
   
   .section-container {
-    @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24;
+    @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16 lg:py-24;
   }
   
   .typing-container {
@@ -210,5 +245,10 @@
     to {
       background-position: 200% 0;
     }
+  }
+
+  /* Simple magnetic effect */
+  .magnetic-effect {
+    transition: transform 0.3s ease-out;
   }
 }

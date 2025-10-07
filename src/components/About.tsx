@@ -33,23 +33,23 @@ const About: React.FC = () => {
   const cards = [
     {
       icon: <Code className="w-6 h-6 text-highlight-blue" />,
-      title: 'Desenvolvimento Web',
-      description: 'Desenvolvedor Web em constante aprendizado com atuação desde 2023 em projetos próprios e colaborativos, com foco em desenvolvimento web, integração com APIs e automação de processos.',
+      title: 'Sites Profissionais',
+      description: 'Criação de sites responsivos e otimizados para SEO que aumentam a visibilidade da sua empresa no Google. Desenvolvimento com foco em conversão e performance.',
     },
     {
       icon: <GraduationCap className="w-6 h-6 text-highlight-green" />,
-      title: 'Formação',
-      description: 'Graduação em Análise e Desenvolvimento de Sistemas pela UNIFAMETRO e formação técnica em Informática pelo CEPEP. Concilio formação com aplicação prática e constante atualização.',
+      title: 'Sistemas Sob Medida',
+      description: 'Desenvolvimento de sistemas web personalizados para automação de processos, gestão empresarial e integração de dados. Soluções escaláveis e eficientes.',
     },
     {
       icon: <Briefcase className="w-6 h-6 text-highlight-blue" />,
-      title: 'Experiência',
-      description: 'Experiência em desenvolvimento de sistemas de gestão, aplicações web e soluções de software. Foco em soluções eficientes e escaláveis com boas práticas de versionamento.',
+      title: 'Automação Inteligente',
+      description: 'Automação de rotinas e processos empresariais com integração de APIs e sistemas. Reduza custos operacionais e aumente a produtividade da sua empresa.',
     },
     {
       icon: <Cpu className="w-6 h-6 text-highlight-green" />,
-      title: 'Tecnologias',
-      description: 'Java, Python, React, HTML5, CSS3, JavaScript, MySQL, Git, GitHub, APIs, JSON, Linux. Foco atual em integração de APIs e automação de rotinas.',
+      title: 'Tecnologias Modernas',
+      description: 'React, TypeScript, Node.js, Python, Java, MySQL, Git. Sempre atualizado com as melhores práticas e tecnologias mais eficientes do mercado.',
     },
   ];
   
@@ -58,26 +58,26 @@ const About: React.FC = () => {
       <div className="section-container">
         <div className="text-center mb-16">
           <h2 className="animate-on-scroll text-3xl md:text-4xl font-bold mb-4">
-            <span className="gradient-text">Sobre</span> Mim
+            <span className="gradient-text">Projetos que geram resultados reais</span> para empresas e profissionais
           </h2>
           <div className="animate-on-scroll w-20 h-1 bg-highlight-blue mx-auto rounded-full"></div>
         </div>
         
         <div className="max-w-3xl mx-auto text-center animate-on-scroll mb-16">
           <p className="text-lg text-gray-300 leading-relaxed mb-6">
-            Desenvolvedor Web em constante aprendizado com atuação desde 2023 em projetos próprios e colaborativos, 
-            com foco em desenvolvimento web, integração com APIs e automação de processos. Concilio minha formação 
-            com aplicação prática e constante atualização em tecnologias modernas.
+            <strong className="text-white">Sites profissionais otimizados para o Google</strong> que aumentam sua visibilidade online. 
+            Desenvolvo <strong className="text-highlight-blue">sistemas web personalizados</strong> com alta performance e 
+            <strong className="text-highlight-green"> automação inteligente</strong> para empresas e profissionais que buscam resultados reais.
           </p>
           <p className="text-lg text-gray-300 leading-relaxed mb-6">
-            Domino ferramentas como Git e GitHub, e atuo com foco em soluções eficientes e escaláveis, aplicando boas 
-            práticas de versionamento e integração contínua. Tenho experiência com consumo e implementação de APIs, 
-            além de interesse ativo por automação inteligente e IA aplicada ao desenvolvimento.
+            Com formação em <strong className="text-white">Análise e Desenvolvimento de Sistemas</strong> e experiência prática desde 2023, 
+            aplico as melhores tecnologias: <strong className="text-highlight-blue">React, TypeScript, Node.js, Python e Java</strong>. 
+            Foco em soluções eficientes, escaláveis e com boas práticas de desenvolvimento.
           </p>
           <p className="text-lg text-gray-300 leading-relaxed">
-            💼 Interesso-me por oportunidades em projetos, freelas, parcerias tecnológicas e contribuições para 
-            soluções inovadoras. Estou sempre aberto a desafios que envolvam desenvolvimento web, automações e 
-            integração de sistemas.
+            🎯 <strong className="text-white">Desenvolvo sistemas sob medida com foco em resultado</strong>. 
+            Seja para automação de processos, criação de sites profissionais ou integração de sistemas, 
+            cada projeto é pensado para gerar valor real para seu negócio.
           </p>
         </div>
         

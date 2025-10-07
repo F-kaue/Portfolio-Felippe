@@ -1,0 +1,63 @@
+{
+  "name": "Felippe Kauê - Desenvolvedor Full Stack",
+  "short_name": "Felippe Kauê",
+  "description": "Desenvolvedor Full Stack especializado em criar sites, sistemas e automações personalizadas que geram resultados reais para empresas e profissionais.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0a0a0a",
+  "theme_color": "#0ea5e9",
+  "orientation": "portrait-primary",
+  "scope": "/",
+  "lang": "pt-BR",
+  "dir": "ltr",
+  "categories": ["business", "productivity", "developer"],
+  "icons": [
+    {
+      "src": "/lovable-uploads/158f3c56-5cde-4833-a6b3-7f704560784e.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/lovable-uploads/158f3c56-5cde-4833-a6b3-7f704560784e.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "/lovable-uploads/158f3c56-5cde-4833-a6b3-7f704560784e.png",
+      "sizes": "1280x720",
+      "type": "image/png",
+      "form_factor": "wide",
+      "label": "Portfolio Felippe Kauê - Desktop"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Contato",
+      "short_name": "Contato",
+      "description": "Entre em contato para solicitar orçamento",
+      "url": "/#contact",
+      "icons": [
+        {
+          "src": "/lovable-uploads/158f3c56-5cde-4833-a6b3-7f704560784e.png",
+          "sizes": "96x96"
+        }
+      ]
+    },
+    {
+      "name": "Projetos",
+      "short_name": "Projetos",
+      "description": "Veja meus projetos desenvolvidos",
+      "url": "/#projects",
+      "icons": [
+        {
+          "src": "/lovable-uploads/158f3c56-5cde-4833-a6b3-7f704560784e.png",
+          "sizes": "96x96"
+        }
+      ]
+    }
+  ]
+}
